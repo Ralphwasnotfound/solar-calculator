@@ -63,18 +63,40 @@ export default {
   },
   
   methods: {
-  goNext() {
-    const index = this.steps.findIndex(s => s.key === this.currentStep);
+    goNext() {
+      const index = this.steps.findIndex(s => s.key === this.currentStep);
 
-    if (index < this.steps.length - 1) {
-      this.currentStep = this.steps[index + 1].key;
+      if (index < this.steps.length - 1) {
+        this.currentStep = this.steps[index + 1].key;
+      }
+    },
+
+    goStep(stepKey) {
+      this.currentStep = stepKey;
+    },
+
+    resetAll() {
+    localStorage.removeItem('solarData');
+    location.reload();
+  }
+  },
+
+  mounted() {
+    const saved = localStorage.getItem('solarData');
+
+    if (saved) {
+      Object.assign(this.$data, JSON.parse(saved));
     }
   },
 
-  goStep(stepKey) {
-    this.currentStep = stepKey;
+  watch: {
+    $data: {
+      handler(val) {
+        localStorage.setItem('solarData', JSON.stringify(val));
+      },
+      deep: true
+    }
   }
-}
 }
 </script>
 
@@ -109,16 +131,32 @@ export default {
 
     </div>
 
-    <LoadAnalysis v-if="currentStep === 'load'"/>
-    <PanelSizing v-if="currentStep === 'panel'"/>
+    <div class="mt-6 flex justify-end">
+      <button
+      @click="resetAll"
+      class="bg-red-500 text-white px-4 py-2 gap-2 rounded flex items-center justify-between"
+      >
+        RESET
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7 4V2H17V4H22V6H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V6H2V4H7ZM6 6V20H18V6H6ZM9 9H11V17H9V9ZM13 9H15V17H13V9Z"></path></svg>
+      </button>
+    </div>
+
+    <LoadAnalysis v-show="currentStep === 'load'"/>
+    <PanelSizing v-show="currentStep === 'panel'"/>
+    <Inverter v-show="currentStep === 'inverter'"/>
+    <StringConfig v-show="currentStep === 'stringConfig'"/>
+    <Battery v-show="currentStep === 'battery'"/>
+    <WireSizing v-show="currentStep === 'wireSizing'"/>
+    <Breakers v-show="currentStep === 'breakers'"/>
 
     <!--NEXT BUTTON-->
-    <div class="mt-6 text-right">
+    <div class="mt-6 flex justify-end">
       <button
       @click="goNext"
-      class="bg-blue-500 text-white px-4 py-2 rounded"
+      class="bg-blue-500 text-white px-4 py-2 gap-2 rounded flex items-center justify-between"
       >
-        NEXT ->
+        NEXT 
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M15.6315 12L10.8838 3.03212L9.11622 3.9679L13.3685 12L9.11622 20.0321L10.8838 20.9679L15.6315 12Z"></path></svg>
       </button>
     </div>
 
