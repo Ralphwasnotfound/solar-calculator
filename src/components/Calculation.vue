@@ -22,6 +22,7 @@ export default {
   data() {
     return {
       currentStep : "load",
+      requiredSolar: 0,
       steps: [
         { 
           key: "load", 
@@ -76,27 +77,24 @@ export default {
     },
 
     resetAll() {
-    localStorage.removeItem('solarData');
-    location.reload();
-  }
+      localStorage.clear();
+      location.reload();
+    }
   },
-
   mounted() {
-    const saved = localStorage.getItem('solarData');
+    const savedStep = localStorage.getItem('currentStep');
 
-    if (saved) {
-      Object.assign(this.$data, JSON.parse(saved));
+    if (savedStep) {
+      this.currentStep = savedStep;
     }
   },
 
   watch: {
-    $data: {
-      handler(val) {
-        localStorage.setItem('solarData', JSON.stringify(val));
-      },
-      deep: true
+    currentStep(val) {
+      localStorage.setItem('currentStep', val);
     }
   }
+
 }
 </script>
 
@@ -141,8 +139,14 @@ export default {
       </button>
     </div>
 
-    <LoadAnalysis v-show="currentStep === 'load'"/>
-    <PanelSizing v-show="currentStep === 'panel'"/>
+    <LoadAnalysis 
+      v-show="currentStep === 'load'"
+      @update-solar="requiredSolar = $event"
+    />
+    <PanelSizing 
+      v-show="currentStep === 'panel'"
+      :requiredSolar="requiredSolar"
+    />
     <Inverter v-show="currentStep === 'inverter'"/>
     <StringConfig v-show="currentStep === 'stringConfig'"/>
     <Battery v-show="currentStep === 'battery'"/>

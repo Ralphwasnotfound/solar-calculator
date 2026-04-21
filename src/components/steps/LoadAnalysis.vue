@@ -126,7 +126,7 @@ export default {
     }
   },
   mounted() {
-    const saved = localStorage.getItem('solarData');
+    const saved = localStorage.getItem('loadData');
     
     if (saved) {
       Object.assign(this.$data, JSON.parse(saved));
@@ -135,9 +135,12 @@ export default {
   watch: {
     $data: {
       handler(val) {
-        localStorage.setItem('solarData', JSON.stringify(val));
+        localStorage.setItem('loadData', JSON.stringify(val));
       },
       deep: true
+    },
+    requiredSolar(val) {
+      this.$emit('update-solar', val)
     }
   }
 
