@@ -25,6 +25,7 @@ export default {
             searchPanel() {
                 if (!this.search) {
                     this.results = [];
+                    this.selectedPanel = null;
                     return;
                 }
 
@@ -102,7 +103,7 @@ export default {
 
         <!-- MODE SWITCH -->
         <div class="grid grid-cols-2">
-            <div class="flex justify-between items-center gap-3 mb-6">
+            <div class="flex-1 flex items-center justify-center gap-2 px-4 py-2 w-full text-md rounded font-semibold mb-6">
                 <button
                     @click="mode = 'list'"
                     :class="mode === 'list'
@@ -163,48 +164,59 @@ export default {
             </div>
         </div>
 
-        <div v-if="mode === 'list' && selectedPanel" class="mt-4 border rounded-lg p-4 bg-gray-50">
-
-            <h3 class="font-semibold mb-3 text-gray-700">
-                Panel Specifications
-            </h3>
-        
-            <div class="grid grid-cols-2 gap-y-2 text-sm">
+        <!-- PANEL DISPLAY LOGIC -->
+        <div class="mt-4">
+        <!-- LIST MODE -->
+            <template v-if="mode === 'list'">
             
-                <span class="text-gray-500">Wattage</span>
-                <span class="text-right font-medium">
-                    {{ selectedPanel.watt }} W
-                </span>
-            
-                <span class="text-gray-500">Voc (Open-Circuit Voltage)</span>
-                <span class="text-right font-medium">
-                    {{ selectedPanel.voc }} V
-                </span>
-            
-                <span class="text-gray-500">Vmp (Voltage at Max Power)</span>
-                <span class="text-right font-medium">
-                    {{ selectedPanel.vmp }} V
-                </span>
+                <!-- SELECTED PANEL -->
+                <div v-if="selectedPanel" class="border rounded-lg p-4 bg-gray-50">
 
-                <span class="text-gray-500">Isc (Short-Circuit Current)</span>
-                <span class="text-right font-medium">
-                    {{ selectedPanel.isc }} A
-                </span>
+                    <h3 class="font-semibold mb-3 text-gray-700">
+                        Panel Specifications
+                    </h3>
+                
+                    <div class="grid grid-cols-2 gap-y-2 text-sm">
+                        <span>Wattage</span>
+                        <span class="text-right">{{ selectedPanel.watt }} W</span>
 
-                <span class="text-gray-500">Imp (Current at Max Power)</span>
-                <span class="text-right font-medium">
-                    {{ selectedPanel.imp }} A
-                </span>
+                        <span>Voc</span>
+                        <span class="text-right">{{ selectedPanel.voc }} V</span>
+
+                        <span>Vmp</span>
+                        <span class="text-right">{{ selectedPanel.vmp }} V</span>
+
+                        <span>Isc</span>
+                        <span class="text-right">{{ selectedPanel.isc }} A</span>
+
+                        <span>Imp</span>
+                        <span class="text-right">{{ selectedPanel.imp }} A</span>
+
+                        <span>Efficiency</span>
+                        <span class="text-right">{{ selectedPanel.efficiency }} %</span>
+                    </div>
+                
+                </div>
             
-                <span class="text-gray-500">Efficiency</span>
-                <span class="text-right font-medium">
-                    {{ selectedPanel.efficiency }} %
-                </span>
-            </div>
-        </div>
-
-        <div v-if="mode === 'custom'" class="mt-4 p-4 border rounded text-gray-400 text-center">
-            Panel Custom specs coming soon...
+                <!-- EMPTY STATE -->
+                <div v-else class="p-6 border rounded-lg text-center text-gray-400">
+                    <p class="text-lg flex items-center justify-center gap-2 mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="rgba(140,145,150,1)"><path d="M12 18C8.68629 18 6 15.3137 6 12C6 8.68629 8.68629 6 12 6C15.3137 6 18 8.68629 18 12C18 15.3137 15.3137 18 12 18ZM11 1H13V4H11V1ZM11 20H13V23H11V20ZM3.51472 4.92893L4.92893 3.51472L7.05025 5.63604L5.63604 7.05025L3.51472 4.92893ZM16.9497 18.364L18.364 16.9497L20.4853 19.0711L19.0711 20.4853L16.9497 18.364ZM19.0711 3.51472L20.4853 4.92893L18.364 7.05025L16.9497 5.63604L19.0711 3.51472ZM5.63604 16.9497L7.05025 18.364L4.92893 20.4853L3.51472 19.0711L5.63604 16.9497ZM23 11V13H20V11H23ZM4 11V13H1V11H4Z"></path></svg>
+                        No Solar Panel selected</p>
+                    <p class="text-sm">
+                        Search and select a panel to view specifications
+                    </p>
+                </div>
+            
+            </template>
+    
+            <!-- CUSTOM MODE -->
+            <template v-else>
+                <div class="p-4 border rounded text-gray-400 text-center">
+                    Panel Custom specs coming soon...
+                </div>
+            </template>
+    
         </div>
 
         <label class="flex items-center gap-3 mb-2 cursor-pointer mt-4">

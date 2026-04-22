@@ -14,12 +14,7 @@ export default {
       monthlyKwh: null,
 
       // DEVICE
-      devices: [
-        { name: '', 
-        watts: null, 
-        hours: null, 
-        qty: null }
-      ]
+      devices: []
     };
   },
 
@@ -60,7 +55,6 @@ export default {
 
       return this.dailyKwh / sun;
     },
-
     totalDeviceKwh() {
       return this.devices.reduce((total, d) => {
       const watts = Number(d.watts) || 0;
@@ -92,10 +86,14 @@ export default {
     
       return 0;
     },
-
     // DAILY
     dailyKwh() {
       return this.computedMonthlyKwh / 30;
+    },
+    hasDevices() {
+      return this.devices.some(d =>
+        d.name || d.watts || d.hours || d.qty
+      );
     }
   },
 
@@ -118,7 +116,7 @@ export default {
     },
     tabClass(modeName) {
     return [
-      "flex items-center gap-2 px-24 py-3 text-md rounded-lg font-semiboldd transition-all",
+      "flex-1 flex items-center justify-center gap-2 px-4 py-2 w-full text-md rounded font-semibold transition-all",
       this.mode === modeName
         ? "bg-blue-500 text-white"
         : "bg-gray-200"
@@ -169,7 +167,7 @@ export default {
         @click="setMode('direct')"
         :class="tabClass('direct')"
       >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="rgba(173,184,194,1)"><path d="M16.0037 9.41421L7.39712 18.0208L5.98291 16.6066L14.5895 8H7.00373V6H18.0037V17H16.0037V9.41421Z"></path></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M17 22H7V20H17V22ZM10 5H14V2H16V5H20C20.5523 5 21 5.44772 21 6V15C21 17.2091 19.2091 19 17 19H7C4.79086 19 3 17.2091 3 15V6C3 5.44772 3.44772 5 4 5H8V2H10V5ZM5 15C5 16.1046 5.89543 17 7 17H17C18.1046 17 19 16.1046 19 15V7H5V15Z"></path></svg>
       DIRECT
       </button>
 
@@ -177,7 +175,7 @@ export default {
         @click="setMode('bill')"
         :class="tabClass('bill')"
       >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="rgba(173,184,194,1)"><path d="M20 22H4C3.44772 22 3 21.5523 3 21V3C3 2.44772 3.44772 2 4 2H20C20.5523 2 21 2.44772 21 3V21C21 21.5523 20.5523 22 20 22ZM19 20V4H5V20H19ZM8 7H16V9H8V7ZM8 11H16V13H8V11ZM8 15H16V17H8V15Z"></path></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 22H5C3.34315 22 2 20.6569 2 19V3C2 2.44772 2.44772 2 3 2H17C17.5523 2 18 2.44772 18 3V15H22V19C22 20.6569 20.6569 22 19 22ZM18 17V19C18 19.5523 18.4477 20 19 20C19.5523 20 20 19.5523 20 19V17H18ZM16 20V4H4V19C4 19.5523 4.44772 20 5 20H16ZM6 7H14V9H6V7ZM6 11H14V13H6V11ZM6 15H11V17H6V15Z"></path></svg>
       BILL
       </button>
 
@@ -185,7 +183,7 @@ export default {
         @click="setMode('device')"
         :class="tabClass('device')"
       >
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="rgba(173,184,194,1)"><path d="M19 8H21C21.5523 8 22 8.44772 22 9V21C22 21.5523 21.5523 22 21 22H13C12.4477 22 12 21.5523 12 21V20H4C3.44772 20 3 19.5523 3 19V3C3 2.44772 3.44772 2 4 2H18C18.5523 2 19 2.44772 19 3V8ZM17 8V4H5V18H12V9C12 8.44772 12.4477 8 13 8H17ZM14 10V20H20V10H14Z"></path></svg>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M19 8H21C21.5523 8 22 8.44772 22 9V21C22 21.5523 21.5523 22 21 22H13C12.4477 22 12 21.5523 12 21V20H4C3.44772 20 3 19.5523 3 19V3C3 2.44772 3.44772 2 4 2H18C18.5523 2 19 2.44772 19 3V8ZM17 8V4H5V18H12V9C12 8.44772 12.4477 8 13 8H17ZM14 10V20H20V10H14Z"></path></svg>
       DEVICE
       </button>
     </div>
@@ -332,45 +330,67 @@ export default {
           </p>
       </div>
 
-      <div class="bg-white p-2 rounded shadow"> 
+      <!-- DEVICE BOX -->
+<div class="bg-white p-2 rounded shadow"> 
 
-        <div class="flex items-center justify-between mb-2">
-          <p class="flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="25" height="25" fill="rgba(147,152,153,1)"><path d="M3 17H21V19H3V17ZM3 11H6V14H3V11ZM8 11H11V14H8V11ZM3 5H6V8H3V5ZM13 5H16V8H13V5ZM18 5H21V8H18V5ZM13 11H16V14H13V11ZM18 11H21V14H18V11ZM8 5H11V8H8V5Z"></path></svg>
-            Device/Appliances
-          </p>
-          <button @click="addDevice" class="flex items-center gap-1 text-blue-600 bg-blue-200 p-1 rounded-md">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z"></path></svg>
-            Add Device
-          </button>
+  <div class="flex items-center justify-between mb-2">
+    <p class="flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="25" height="25" fill="rgba(147,152,153,1)">
+        <path d="M3 17H21V19H3V17ZM3 11H6V14H3V11ZM8 11H11V14H8V11ZM3 5H6V8H3V5ZM13 5H16V8H13V5ZM18 5H21V8H18V5ZM13 11H16V14H13V11ZM18 11H21V14H18V11ZM8 5H11V8H8V5Z"></path>
+      </svg>
+      Device/Appliances
+    </p>
 
-        </div>
+    <button @click="addDevice" class="flex items-center gap-1 text-blue-600 bg-blue-200 p-1 rounded-md">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)">
+        <path d="M11 11V5H13V11H19V13H13V19H11V13H5V11H11Z"></path>
+      </svg>
+      Add Device
+    </button>
+  </div>
 
-        <span class="block h-[2px] w-full bg-slate-300 mb-4"></span>
+  <span class="block h-[2px] w-full bg-slate-300 mb-4"></span>
 
-        <div
-          v-for="(device, index) in devices"
-          :key="index"
-          >
+  <!-- ✅ IF HAS DEVICES -->
+  <div v-if="devices.length > 0">
 
-          <div class="grid grid-cols-6 gap-2 mb-2">
-            
-            <input v-model="device.name" placeholder="Device Name" class="input" />
-            <input v-model="device.watts" type="number" placeholder="Watts" class="input" />
-            <input v-model="device.hours" type="number" placeholder="Hours" class="input" />
-            <input v-model="device.qty" type="number" placeholder="Qty" class="input" />
+    <div
+      v-for="(device, index) in devices"
+      :key="index"
+    >
+      <div class="grid grid-cols-6 gap-2 mb-2">
+        
+        <input v-model="device.name" placeholder="Device Name" class="input" />
+        <input v-model="device.watts" type="number" placeholder="Watts" class="input" />
+        <input v-model="device.hours" type="number" placeholder="Hours" class="input" />
+        <input v-model="device.qty" type="number" placeholder="Qty" class="input" />
 
-            <p class="mt-3 text-sm text-gray-600">
-            Device Daily: {{ deviceDailyKwh.toFixed(2) }} kWh 
-            </p>
+        <p class="mt-3 text-sm text-gray-600">
+          Device Daily: {{ deviceDailyKwh.toFixed(2) }} kWh 
+        </p>
 
-            <button @click="removeDevice(index)">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="25" height="25" fill="rgba(231,18,18,1)"><path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8ZM13.4142 13.9997L15.182 15.7675L13.7678 17.1817L12 15.4139L10.2322 17.1817L8.81802 15.7675L10.5858 13.9997L8.81802 12.232L10.2322 10.8178L12 12.5855L13.7678 10.8178L15.182 12.232L13.4142 13.9997ZM9 4V6H15V4H9Z"></path></svg>
-            </button>
-          
-          </div>
-        </div>
+        <button @click="removeDevice(index)">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="25" height="25" fill="rgba(231,18,18,1)">
+            <path d="M17 6H22V8H20V21C20 21.5523 19.5523 22 19 22H5C4.44772 22 4 21.5523 4 21V8H2V6H7V3C7 2.44772 7.44772 2 8 2H16C16.5523 2 17 2.44772 17 3V6ZM18 8H6V20H18V8Z"></path>
+          </svg>
+        </button>
+
       </div>
+    </div>
+
+  </div>
+
+  <!-- MPTY STATE (same style, no design break) -->
+  <div v-else class="text-center text-gray-400 py-6">
+    <p class="text-lg flex items-center justify-center gap-2 mb-2">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="rgba(140,145,150,1)"><path d="M17 22H7V20H17V22ZM10 5H14V2H16V5H20C20.5523 5 21 5.44772 21 6V15C21 17.2091 19.2091 19 17 19H7C4.79086 19 3 17.2091 3 15V6C3 5.44772 3.44772 5 4 5H8V2H10V5Z"></path></svg>
+      No devices added</p>
+    <p class="text-sm">Click "Add Device" to start</p>
+  </div>
+
+</div>
+
+
     <div>
 
         <div>
