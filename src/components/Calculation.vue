@@ -23,6 +23,10 @@ export default {
     return {
       currentStep : "load",
       requiredSolar: 0,
+      adjustedPower: 0,
+      dailyWh: 0,
+      sunHours: 4,
+      totalPvPower: 0,
       steps: [
         { 
           key: "load", 
@@ -77,7 +81,11 @@ export default {
     },
 
     resetAll() {
-      localStorage.clear();
+      localStorage.removeItem('currentStep');
+      localStorage.removeItem('loadData');
+      localStorage.removeItem('panelData');
+      localStorage.removeItem('inverterData');
+
       location.reload();
     }
   },
@@ -142,12 +150,21 @@ export default {
     <LoadAnalysis 
       v-show="currentStep === 'load'"
       @update-solar="requiredSolar = $event"
+      @update-energy="dailyWh = $event"
+      @update-sunhours="sunHours = $event"
     />
     <PanelSizing 
       v-show="currentStep === 'panel'"
       :requiredSolar="requiredSolar"
+      :dailyWh="dailyWh"
+      :sunHours="sunHours"
+      @update-adjusted="adjustedPower = $event"
+      @update-totalpv="totalPvPower = $event"
     />
-    <Inverter v-show="currentStep === 'inverter'"/>
+    <Inverter 
+      v-show="currentStep === 'inverter'"
+      :adjusted-power="totalPvPower"
+    />
     <StringConfig v-show="currentStep === 'stringConfig'"/>
     <Battery v-show="currentStep === 'battery'"/>
     <WireSizing v-show="currentStep === 'wireSizing'"/>
@@ -166,5 +183,4 @@ export default {
 
   </div>
 
-  <!--STEP CONTENT-->
 </template>

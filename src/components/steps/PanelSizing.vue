@@ -2,7 +2,11 @@
 import { panels } from '../../data/panels.js';
 
 export default {
-    props: ['requiredSolar'], // from LoadAnalysis
+    props: [
+        'requiredSolar',     
+        'dailyWh',
+        'sunHours'
+        ], // from LoadAnalysis
 
         data() {
             return {
@@ -76,6 +80,12 @@ export default {
                 },
                 deep: true
             },
+            adjustedPower(val) {
+                this.$emit('update-adjusted', val)
+            },
+            totalPvPower(val) {
+                this.$emit('update-totalpv', val)
+            }
         }
         
     };
@@ -282,12 +292,12 @@ export default {
                     <h1 class="font-bold">Formula:</h1>
                     
                     PV Power =
-                    ({{ (requiredWatts).toFixed(0) }} W ÷ {{ sunHours || 4 }}h)
-                    = {{ requiredWatts.toFixed(0) }} W
+                    ({{ ((dailyWh || 0)* 1000).toFixed(0) }} Wh / {{ sunHours || 4 }}h)
+                    = {{ ((dailyWh || 0) * 1000 / (sunHours || 4)).toFixed(0) }} W
                     |
                     Panels =
-                    {{ adjustedPower.toFixed(0) }} W ÷ {{ panelWattage }} W
-                    = 
+                    {{ adjustedPower.toFixed(0) }} W / {{ panelWattage || 0 }} W
+                    =
                     <h1 class="font-bold">{{ panelsNeeded }} pcs</h1>
                 </span>
             </div>

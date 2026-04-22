@@ -141,6 +141,14 @@ export default {
     },
     requiredSolar(val) {
       this.$emit('update-solar', val)
+    },
+
+    dailyKwh(val) {
+      this.$emit('update-energy', val)
+    },
+
+    sunHours(val) {
+      this.$emit('update-sunhours', val)
     }
   }
 
