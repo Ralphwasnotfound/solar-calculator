@@ -27,6 +27,9 @@ export default {
       dailyWh: 0,
       sunHours: 4,
       totalPvPower: 0,
+      selectedPanel: null,
+      selectedInverter: null,
+      totalPanels: 0,
       steps: [
         { 
           key: "load", 
@@ -85,6 +88,7 @@ export default {
       localStorage.removeItem('loadData');
       localStorage.removeItem('panelData');
       localStorage.removeItem('inverterData');
+      localStorage.removeItem('mppts');
 
       location.reload();
     }
@@ -158,14 +162,26 @@ export default {
       :requiredSolar="requiredSolar"
       :dailyWh="dailyWh"
       :sunHours="sunHours"
+
       @update-adjusted="adjustedPower = $event"
       @update-totalpv="totalPvPower = $event"
+
+      @update-panel="selectedPanel = $event"
+      @update-total-panels="totalPanels = $event"
     />
     <Inverter 
       v-show="currentStep === 'inverter'"
       :adjusted-power="totalPvPower"
+
+      @update-inverter="selectedInverter = $event"
     />
-    <StringConfig v-show="currentStep === 'stringConfig'"/>
+    <StringConfig 
+      v-show="currentStep === 'stringConfig'"
+
+      :selectedPanel="selectedPanel"
+      :selected-inverter="selectedInverter"
+      :total-panels="totalPanels"
+    />
     <Battery v-show="currentStep === 'battery'"/>
     <WireSizing v-show="currentStep === 'wireSizing'"/>
     <Breakers v-show="currentStep === 'breakers'"/>

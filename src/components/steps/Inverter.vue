@@ -115,6 +115,9 @@ export default {
         }));
       }
     },
+    activeInverter(val) {
+      this.$emit('update-inverter', val)
+    },
 
     searchQuery(val) {
       const saved = JSON.parse(localStorage.getItem('inverterData')) || {};

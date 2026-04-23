@@ -79,7 +79,27 @@ export const inverters = [
         mpptCount: 2,
         maxVoltagePerMppt: "600V",
         maxCurrentPerMppt: "12A"
-    }
+    },
+    {
+    brand: "Deye",
+    model: "SUN-8K-SG04LP3",
+    type: "hybrid",
+
+    power: 8000,
+
+    voltage: "48V",
+    phase: "three",
+
+    maxPvInput: "10400W",
+
+    batteryRange: "48-48V",
+
+    mpptCount: 2,
+
+    maxVoltagePerMppt: "550V",
+
+    maxCurrentPerMppt: "15A"
+  },
 
   /* ⚡ ON-GRID (future)
   {

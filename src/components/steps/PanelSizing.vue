@@ -86,7 +86,14 @@ export default {
             },
             totalPvPower(val) {
                 this.$emit('update-totalpv', val)
-            }
+            },
+            selectedPanel(val) {
+                this.$emit('update-panel', val)
+            },
+            panelsNeeded(val) {
+                this.$emit('update-total-panels', val)
+            },
+            
         }
         
     };

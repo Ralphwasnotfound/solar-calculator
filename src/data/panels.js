@@ -42,7 +42,57 @@ export const panels = [
   { brand: "Risen", model: "Titan 550W", watt: 550, voc: 49.7, vmp: 41.9, isc: 13.95, imp: 13.25, efficiency: 21.3 },
 
   // 🔋 SUNTECH
-  { brand: "Suntech", model: "Ultra V 540W", watt: 540, voc: 49.2, vmp: 41.4, isc: 13.7, imp: 13.0, efficiency: 20.9 },
-  { brand: "Suntech", model: "Ultra V 550W", watt: 550, voc: 49.4, vmp: 41.6, isc: 13.85, imp: 13.1, efficiency: 21.0 }
+  { 
+    brand: "Suntech", 
+    model: "Ultra V 540W", 
+    watt: 540, 
+    voc: 49.2, 
+    vmp: 41.4, 
+    isc: 13.7, 
+    imp: 13.0, 
+    efficiency: 20.9 
+  },
+  { 
+    brand: "Suntech", 
+    model: "Ultra V 550W", 
+    watt: 550, 
+    voc: 49.4, 
+    vmp: 41.6, 
+    isc: 13.85, 
+    imp: 13.1, 
+    efficiency: 21.0 
+  },
+  { 
+  brand: "Jinko",
+  model: "Tiger Neo 400W",
+  watt: 400,
+  voc: 37.24,
+  vmp: 31.12,
+  isc: 13.87,
+  imp: 12.86,
+  efficiency: 20.7
+},
+
+{
+  brand: "Longi",
+  model: "Hi-MO4 450W",
+  watt: 450,
+  voc: 41.5,
+  vmp: 34.8,
+  isc: 11.0,
+  imp: 10.5,
+  efficiency: 20.7
+},
+
+{
+  brand: "Trina",
+  model: "Vertex S 430W",
+  watt: 430,
+  voc: 39.8,
+  vmp: 33.6,
+  isc: 10.7,
+  imp: 10.1,
+  efficiency: 20.3
+},
 
 ];
