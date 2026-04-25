@@ -30,6 +30,9 @@ export default {
       selectedPanel: null,
       selectedInverter: null,
       totalPanels: 0,
+      showBatteryWarning: false,
+      batteryWarningMessage: '',
+      pendingStep: null,
       steps: [
         { 
           key: "load", 
@@ -72,11 +75,66 @@ export default {
   
   methods: {
     goNext() {
-      const index = this.steps.findIndex(s => s.key === this.currentStep);
 
-      if (index < this.steps.length - 1) {
-        this.currentStep = this.steps[index + 1].key;
+      if (
+          this.currentStep === 'battery'
+      ) {
+      
+          const batteryData =
+              JSON.parse(
+                  localStorage.getItem('batteryData')
+              )
+      
+          const inverter =
+              this.selectedInverter
+      
+          if (
+              batteryData?.selectedBattery &&
+              inverter
+          ) {
+          
+              const batteryVoltage =
+                  batteryData.selectedBattery.voltage
+          
+              const range =
+                  inverter.batteryRange
+          
+              const min =
+                  parseInt(range.split('-')[0])
+          
+              const max =
+                  parseInt(range.split('-')[1])
+          
+              if (
+                  batteryVoltage < min ||
+                  batteryVoltage > max
+              ) {
+              
+                this.batteryWarningMessage =
+                
+                `Battery voltage (${batteryVoltage}V) is outside inverter's range (${range}). You may need to wre batties in series or choose a different battery.`
+                this.showBatteryWarning = true
+                return
+              }
+            
+          }
+        
       }
+    
+      const index =
+          this.steps.findIndex(
+              s => s.key === this.currentStep
+          )
+    
+      if (
+          index < this.steps.length - 1
+      ) {
+      
+          this.currentStep =
+              this.steps[index + 1].key
+      
+      }
+      
     },
 
     goStep(stepKey) {
@@ -89,9 +147,22 @@ export default {
       localStorage.removeItem('panelData');
       localStorage.removeItem('inverterData');
       localStorage.removeItem('mppts');
+      localStorage.removeItem('batteryData');
 
       location.reload();
-    }
+    },
+    proceedAnyway() {
+      this.showBatteryWarning = false
+      const index =
+        this.steps.findIndex(s => s.key === this.currentStep)
+      if (index < this.steps.length - 1) {
+          this.currentStep =
+          this.steps[index + 1].key
+      }
+    },
+    closeWarning() {
+      this.showBatteryWarning = false
+    },
   },
   mounted() {
     const savedStep = localStorage.getItem('currentStep');
@@ -106,7 +177,7 @@ export default {
       localStorage.setItem('currentStep', val);
     }
   }
-
+  
 }
 </script>
 
@@ -182,9 +253,63 @@ export default {
       :selected-inverter="selectedInverter"
       :total-panels="totalPanels"
     />
-    <Battery v-show="currentStep === 'battery'"/>
-    <WireSizing v-show="currentStep === 'wireSizing'"/>
-    <Breakers v-show="currentStep === 'breakers'"/>
+    <Battery 
+      v-show="currentStep === 'battery'"
+
+      :dailyWh="dailyWh"
+      :selected-inverter="selectedInverter"
+    />
+    <WireSizing 
+      v-show="currentStep === 'wireSizing'"
+    />
+    <Breakers 
+      v-show="currentStep === 'breakers'"
+    />
+
+    <div
+      v-if="showBatteryWarning"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    >
+
+      <div class="bg-white w-[420px] rounded-xl p-6 shadow-2xl">
+      
+        <h2 class="text-xl font-bold text-orange-500 mb-4 flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="rgba(234,113,46,1)"><path d="M4.00001 20V14C4.00001 9.58172 7.58173 6 12 6C16.4183 6 20 9.58172 20 14V20H21V22H3.00001V20H4.00001ZM6.00001 14H8.00001C8.00001 11.7909 9.79087 10 12 10V8C8.6863 8 6.00001 10.6863 6.00001 14ZM11 2H13V5H11V2ZM19.7782 4.80761L21.1924 6.22183L19.0711 8.34315L17.6569 6.92893L19.7782 4.80761ZM2.80762 6.22183L4.22183 4.80761L6.34315 6.92893L4.92894 8.34315L2.80762 6.22183Z"></path></svg>
+          Precautions
+        </h2>
+
+        <h2 class="text-orange-500 pb-2">
+          Warnings - not advisable
+        </h2>
+      
+        <p class="text-gray-700 mb-6 flex items-center gap-2 bg-orange-200 p-2 rounded-lg">
+          <span class="mb-10">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="30" height="30" fill="rgba(234,113,46,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM11 15H13V17H11V15ZM11 7H13V13H11V7Z"></path></svg>
+          </span>
+          {{ batteryWarningMessage }}
+        </p>
+      
+        <div class="flex justify-end gap-3">
+        
+          <button
+            @click="closeWarning"
+            class="px-4 py-2 rounded bg-gray-200"
+          >
+            Go Back & Fix
+          </button>
+        
+          <button
+            @click="proceedAnyway"
+            class="px-4 py-2 rounded bg-orange-500 text-white"
+          >
+            Proceed Anyway
+          </button>
+        
+        </div>
+      
+      </div>
+    
+    </div>
 
     <!--NEXT BUTTON-->
     <div class="mt-6 flex justify-end">

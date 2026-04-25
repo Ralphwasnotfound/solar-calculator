@@ -113,18 +113,31 @@ export default {
     
     },
     watch: {
-        maxSeriesPanels(newVal) {
-            if (newVal > 0) {
-                this.mppts[0].series = newVal; 
-            }
-        },
+
+    maxSeriesPanels(newVal) {
+
+        if (newVal > 0 && this.mppts[0].series === 0) {
+
+            this.mppts[0].series = newVal;
+
+        }
+
+    },
+
+    mppts: {
+
         handler(newValue) {
-            localStorage.setItem(
-                "mppts",
-                JSON.stringify(newValue)
-            )
-        },
-        deep: true
+
+                localStorage.setItem(
+                    "mppts",
+                    JSON.stringify(newValue)
+                )
+
+            },
+
+            deep: true
+
+        }
 
     },
 }

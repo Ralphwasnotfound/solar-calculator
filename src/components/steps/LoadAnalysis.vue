@@ -141,7 +141,7 @@ export default {
       this.$emit('update-solar', val)
     },
 
-    dailyKwh(val) {
+    dailyWh(val) {
       this.$emit('update-energy', val)
     },
 
@@ -542,30 +542,30 @@ export default {
       <!-- DIRECT -->
       <template v-if="mode === 'direct'">
         <div class="flex items-center justify-start gap-2 font-semibold bg-blue-100 p-1 rounded-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM11 15H13V17H11V15ZM11 7H13V13H11V7Z"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg>
           Formula:
           Daily Wh = ({{ computedMonthlyKwh.toFixed(0) }} kWh / 30 days) × 1000
-          = <strong>{{ dailyWh.toFixed(0) }} Wh</strong>
+          = <span class="font-bold">{{ dailyWh.toFixed(0) }} Wh</span>
         </div>
       </template>
     
       <!-- BILL -->
       <template v-else-if="mode === 'bill'">
         <div class="flex items-center justify-start gap-2 font-semibold bg-blue-100 p-1 rounded-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM11 15H13V17H11V15ZM11 7H13V13H11V7Z"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg>
           Formula:
           (₱{{ bill }} / ₱{{ rate }} per kWh / 30 days / {{ sunHours }}h sun peak)
-          =  <strong> {{ requiredSolar.toFixed(2) }} kW</strong> required solar power
+          =  <span class="font-bold"> {{ requiredSolar.toFixed(2) }} kW</span> required solar power
         </div>
       </template>
     
       <!-- DEVICE -->
       <template v-else>
         <div class="flex items-center justify-start gap-2 font-semibold bg-blue-100 p-1 rounded-lg">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20ZM11 15H13V17H11V15ZM11 7H13V13H11V7Z"></path></svg>
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg>
           Formula:
           Daily Wh = ({{ computedMonthlyKwh.toFixed(0) }} kWh / 30 days) × 1000
-          = <strong>{{ dailyWh.toFixed(0) }} Wh</strong>
+          = <span class="font-bold">{{ dailyWh.toFixed(0) }} Wh</span>
         </div>
       </template>
     
