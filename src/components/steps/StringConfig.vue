@@ -98,47 +98,49 @@ export default {
     },
 
     mounted() {
-
         this.activeMppt = null;
-        
         const savedMppts =
             localStorage.getItem("mppts")
-        
+
         if (savedMppts) {
-        
             this.mppts =
                 JSON.parse(savedMppts)
-        
         }
-    
     },
     watch: {
-
-    maxSeriesPanels(newVal) {
-
-        if (newVal > 0 && this.mppts[0].series === 0) {
-
+        maxSeriesPanels(newVal) {
+            if (newVal > 0 && this.mppts[0].series === 0) {
             this.mppts[0].series = newVal;
-
         }
-
     },
-
     mppts: {
-
         handler(newValue) {
 
-                localStorage.setItem(
-                    "mppts",
-                    JSON.stringify(newValue)
-                )
+            localStorage.setItem(
+                "mppts",
+                JSON.stringify(newValue)
+            )
 
-            },
+            const totalSeriesVoltage = Math.max(
+                ...newValue.map(mppt => mppt.series)
+            )
 
-            deep: true
+            const maxParallelStrings = Math.max(
+                ...newValue.map(mppt => mppt.parallel)
+            )
 
-        }
+            this.$emit(
+                'update-series-panels',
+                totalSeriesVoltage
+            )
 
+            this.$emit(
+                'update-parallel-strings',
+                maxParallelStrings
+            )
+        },
+        deep: true
+    }
     },
 }
 </script>

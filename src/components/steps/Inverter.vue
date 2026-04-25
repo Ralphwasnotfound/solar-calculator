@@ -136,7 +136,7 @@ export default {
 </script>
 
 <template>
-  <div class="bg-white p-6 rounded-xl shadow">
+  <div >
 
     <!-- TITLE -->
     <h2 class="text-2xl flex items-center gap-2 font-bold mb-4">

@@ -1,62 +1,258 @@
 <script>
 
 export default {
-
+    props: {
+        selectedPanel: Object,
+        selectedInverter: Object,
+        dailyWh: Number,
+        totalPanels: Number,
+        seriesPanels: Number,
+        parallelStrings: Number,
+    },
     data() {
-
         return {
+            pvToInverter:
+                Number(
+                    localStorage.getItem(
+                        'pvToInverter'
+                    )
+                ) || 10,
 
-            pvToInverter: 10,
-            batteryToInverter: 2,
-            inverterToLoad: 15,
+            batteryToInverter:
+                Number(
+                    localStorage.getItem(
+                        'batteryToInverter'
+                    )
+                ) || 2,
 
-            voltageDrop: 3,
+            inverterToLoad:
+                Number(
+                    localStorage.getItem(
+                        'inverterToLoad'
+                    )
+                ) || 15,
 
-            sections: [
+            voltageDrop:
+                Number(
+                    localStorage.getItem(
+                        'voltageDrop'
+                    )
+                ) || 3,
+
+            acVoltage:
+                Number(
+                    localStorage.getItem(
+                        'acVoltage'
+                    )
+                ) || 220
+        }
+    },
+    methods: {
+        getWireSize(vdi) {
+            const table = [
+                
+                {
+                    max: 0.5,
+                    awg: 14,
+                    mm: 2.08
+                },
+            
+                {
+                    max: 1.0,
+                    awg: 12,
+                    mm: 3.31
+                },
+            
+                {
+                    max: 2.0,
+                    awg: 10,
+                    mm: 5.26
+                },
+            
+                {
+                    max: 4.0,
+                    awg: 8,
+                    mm: 8.37
+                },
+            
+                {
+                    max: 6.0,
+                    awg: 6,
+                    mm: 13.3
+                },
+            
+                {
+                    max: 10.0,
+                    awg: 4,
+                    mm: 21.1
+                }
+            
+            ]
+            
+            return (
+                table.find(
+                    wire => vdi <= wire.max
+                )
+                ||
+                table[table.length - 1]
+            )
+        }
+    },
+    computed: {
+
+        sections() {
+
+            const pvCurrent =
+                (this.selectedPanel?.isc || 0)
+                *
+                this.parallelStrings
+
+            const pvVoltage =
+                (this.selectedPanel?.voc || 0)
+                *
+                this.seriesPanels
+
+            const batteryVoltage =
+                parseInt(this.selectedInverter?.voltage)
+                || 48
+
+            const inverterPower =
+                parseInt(this.selectedInverter?.power)
+                || 8000
+
+            const batteryCurrent =
+                batteryVoltage
+                ? (
+                    inverterPower /
+                    (batteryVoltage * 0.9)
+                )
+                : 0
+            const acCurrent =
+                inverterPower / this.acVoltage
+
+            // PV VDI
+            const pvVdi =
+                (
+                    (pvCurrent * this.pvToInverter)
+                    /
+                    (
+                        this.voltageDrop *
+                        pvVoltage
+                    )
+                )
+            const pvWire =
+                this.getWireSize(pvVdi)
+
+            // Battery VDI
+                const batteryDistance =
+                this.batteryToInverter
+                * 2
+
+            const batteryVdi =
+            (
+                (
+                    batteryCurrent *
+                    batteryDistance
+                )
+                /
+                (
+                    this.voltageDrop *
+                    batteryVoltage
+                )
+            )
+            const batteryWire =
+                this.getWireSize(batteryVdi)
+
+            // AC VDI
+            const acVdi =
+                (
+                    (acCurrent * this.inverterToLoad)
+                    /
+                    (
+                        this.voltageDrop *
+                        220
+                    )
+                )
+            const acWire =
+                this.getWireSize(acVdi)
+
+            return [
 
                 {
                     name: 'PV to Inverter',
-                    current: 13.9,
-                    voltage: 435.7,
-                    distance: 10,
-                    vdi: 0.3,
-                    awg: 14,
-                    mm: 2.08
+                    current: pvCurrent,
+                    voltage: pvVoltage,
+                    distance: this.pvToInverter,
+                    vdi: pvVdi.toFixed(2),
+                    awg: pvWire.awg,
+                    mm: pvWire.mm
                 },
 
                 {
                     name: 'Battery to Inverter',
-                    current: 185.2,
-                    voltage: 48,
-                    distance: 2,
-                    vdi: 8.4,
-                    awg: 6,
-                    mm: 13.3
+                    current: batteryCurrent,
+                    voltage: batteryVoltage,
+                    distance: this.batteryToInverter,
+                    vdi: batteryVdi.toFixed(2),
+                    awg: batteryWire.awg,
+                    mm: batteryWire.mm
                 },
-
                 {
                     name: 'Inverter to Load',
-                    current: 36.4,
-                    voltage: 220,
-                    distance: 15,
-                    vdi: 2.7,
-                    awg: 10,
-                    mm: 5.26
+                    current: acCurrent,
+                    voltage: this.acVoltage,
+                    distance: this.inverterToLoad,
+                    vdi: acVdi.toFixed(2),
+                    awg: acWire.awg,
+                    mm: acWire.mm
                 }
-
             ]
-
         }
+    },
+    watch: {
 
+        pvToInverter(value) {
+            localStorage.setItem(
+                'pvToInverter',
+                value
+            )
+        },
+
+        batteryToInverter(value) {
+            localStorage.setItem(
+                'batteryToInverter',
+                value
+            )
+        },
+
+        inverterToLoad(value) {
+            localStorage.setItem(
+                'inverterToLoad',
+                value
+            )
+        },
+
+        voltageDrop(value) {
+            localStorage.setItem(
+                'voltageDrop',
+                value
+            )
+        },
+
+        acVoltage(value) {
+            localStorage.setItem(
+                'acVoltage',
+                value
+            )
+        }
     }
-
 }
 
 </script>
 
 <template>
 
-<div class="bg-white p-6 rounded-xl shadow">
+<div >
 
     <!-- TITLE -->
 
@@ -188,7 +384,7 @@ export default {
 
     <!-- TABLE -->
 
-    <div class="overflow-x-auto mb-6">
+    <div class="overflow-x-auto mb-6 bg-white p-6 rounded-xl shadow">
 
         <table class="w-full border-collapse">
 
@@ -241,11 +437,11 @@ export default {
                     </td>
 
                     <td>
-                        {{ section.current }}
+                        {{ Number(section.current).toFixed(1) }}
                     </td>
 
                     <td>
-                        {{ section.voltage }}
+                        {{ Number(section.voltage).toFixed(1) }}
                     </td>
 
                     <td>
@@ -253,7 +449,7 @@ export default {
                     </td>
 
                     <td>
-                        {{ section.vdi }}
+                        {{ Number(section.vdi).toFixed(1) }}
                     </td>
 
                     <td class="font-semibold">
@@ -261,7 +457,7 @@ export default {
                     </td>
 
                     <td>
-                        {{ section.mm }}
+                        {{ Number(section.mm).toFixed(2) }}
                     </td>
 
                 </tr>
@@ -275,22 +471,14 @@ export default {
     <!-- FORMULA -->
 
     <div
-        class="bg-blue-100 text-blue-700 p-3 rounded-lg text-sm"
+        class="bg-blue-100 text-blue-700 p-2 rounded-lg text-sm"
     >
 
         <p class="font-semibold flex items-center gap-2">
 
-            <svg
-                xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 24 24"
-                width="22"
-                height="22"
-                fill="currentColor"
-            >
-                <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm-1-7h2v2h-2v-2zm0-8h2v6h-2V7z"/>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg>
 
-            VDI Formula:
+            <span class="font-bold">VDI Formula:</span>
 
             VDI =
             (Current × Distance_ft)
