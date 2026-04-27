@@ -174,16 +174,110 @@ export default {
     },
   },
   mounted() {
-    const savedStep = localStorage.getItem('currentStep');
+
+    const savedStep =
+        localStorage.getItem(
+            'currentStep'
+        )
 
     if (savedStep) {
-      this.currentStep = savedStep;
+
+        this.currentStep =
+            savedStep
     }
+
+    const savedPanel =
+        localStorage.getItem(
+            'selectedPanel'
+        )
+
+    if (savedPanel) {
+
+        this.selectedPanel =
+            JSON.parse(savedPanel)
+    }
+
+    const savedInverter =
+        localStorage.getItem(
+            'selectedInverter'
+        )
+
+    if (savedInverter) {
+
+        this.selectedInverter =
+            JSON.parse(savedInverter)
+    }
+
+    this.seriesPanels =
+        Number(
+            localStorage.getItem(
+                'seriesPanels'
+            )
+        ) || 0
+
+    this.parallelStrings =
+        Number(
+            localStorage.getItem(
+                'parallelStrings'
+            )
+        ) || 0
+
+    this.totalPanels =
+        Number(
+            localStorage.getItem(
+                'totalPanels'
+            )
+        ) || 0
   },
 
   watch: {
+
     currentStep(val) {
-      localStorage.setItem('currentStep', val);
+        localStorage.setItem(
+            'currentStep',
+            val
+        )
+    },
+
+    selectedPanel: {
+        deep: true,
+        handler(val) {
+            localStorage.setItem(
+                'selectedPanel',
+                JSON.stringify(val)
+            )
+        }
+    },
+
+    selectedInverter: {
+        deep: true,
+        handler(val) {
+            localStorage.setItem(
+                'selectedInverter',
+                JSON.stringify(val)
+            )
+        }
+    },
+
+    seriesPanels(val) {
+        localStorage.setItem(
+            'seriesPanels',
+            val
+        )
+    },
+
+    parallelStrings(val) {
+        localStorage.setItem(
+            'parallelStrings',
+            val
+        )
+    },
+
+    totalPanels(val) {
+        localStorage.setItem(
+            'totalPanels',
+            val
+        )
     }
   }
   
@@ -283,6 +377,15 @@ export default {
     />
     <Breakers 
       v-show="currentStep === 'breakers'"
+
+      :selected-panel="selectedPanel"
+      :selected-inverter="selectedInverter"
+      :series-panels="seriesPanels"
+      :parallel-strings="parallelStrings"
+
+     :ac-voltage="
+    selectedInverter?.acOutputVoltage
+  "
     />
 
     <div
