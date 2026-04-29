@@ -6,6 +6,7 @@ import StringConfig from './steps/StringConfig.vue'
 import Battery from './steps/Battery.vue'
 import WireSizing from './steps/WireSizing.vue'
 import Breakers from './steps/Breakers.vue'
+import Overview from '../components/Overview.vue'
 
 export default {
   components: {
@@ -15,7 +16,8 @@ export default {
     StringConfig,
     Battery,
     WireSizing,
-    Breakers
+    Breakers,
+    Overview
 
   },
 
@@ -35,6 +37,7 @@ export default {
       pendingStep: null,
       seriesPanels: 0,
       parallelStrings: 0,
+      showResetConfirmation: false,
       steps: [
         { 
           key: "load", 
@@ -43,7 +46,7 @@ export default {
         },
         { 
           key: "panel", 
-          label:  "PanelSizing", 
+          label:  "Panel Sizing", 
           icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 3C2.44772 3 2 3.44772 2 4V8L7.5 8V3H3ZM9.5 3V8H14.5V3H9.5ZM16.5 3V8H22V4C22 3.44772 21.5523 3 21 3H16.5ZM22 10H16.5V14H22V10ZM22 16H16.5V21H21C21.5523 21 22 20.5523 22 20V16ZM14.5 21V16H9.5V21H14.5ZM7.5 21V16H2V20C2 20.5523 2.44772 21 3 21H7.5ZM2 14H7.5V10L2 10V14ZM9.5 10H14.5V14H9.5V10Z"></path></svg>` 
         },
         { 
@@ -70,6 +73,11 @@ export default {
           key: "breakers", 
           label: "Breakers", 
           icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 5V2C7 1.44772 7.44772 1 8 1H16C16.5523 1 17 1.44772 17 2V5H21C21.5523 5 22 5.44772 22 6V20C22 20.5523 21.5523 21 21 21H3C2.44772 21 2 20.5523 2 20V6C2 5.44772 2.44772 5 3 5H7ZM17 13V10H15V13H9V10H7V13H4V19H20V13H17ZM9 3V5H15V3H9Z"></path></svg>`
+        },
+        {
+          key: "overview",
+          label: "Overview",
+          icon: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M3 13H11V21H3V13ZM13 3H21V11H13V3ZM13 13H21V21H13V13ZM3 3H11V11H3V3Z"></path></svg>`
         }
       ]
     }
@@ -138,6 +146,13 @@ export default {
       }
       
     },
+    confirmReset() {
+
+      this.showResetConfirmation = false
+        
+      this.resetAll()
+        
+    },
 
     goStep(stepKey) {
       this.currentStep = stepKey;
@@ -157,6 +172,12 @@ export default {
       localStorage.removeItem('inverterToLoad');
       localStorage.removeItem('voltageDrop');
       localStorage.removeItem('acVoltage');
+
+      localStorage.removeItem('selectedPanel');
+      localStorage.removeItem('selectedInverter');
+      localStorage.removeItem('seriesPanels');
+      localStorage.removeItem('parallelStrings');
+      localStorage.removeItem('totalPanels');
 
       location.reload();
     },
@@ -287,37 +308,114 @@ export default {
 <template>
   <div class="p-6 max-w-5xl mx-auto">
 
-    <!--STEPS NAV--->
-    <div class="flex gap-6 mb-6">
+    <!-- STEPS NAV -->
 
-      <div
-      v-for="step in steps"
-      :key="step"
-      @click="goStep(step.key)"
-      class="cursor-pointer flex items-center gap-2"
+<div
+  class="
+    flex
+    items-center
+
+    md:justify-center
+
+    overflow-x-auto
+
+    py-6
+    mb-6
+
+    gap-0
+  "
+>
+
+
+  <template
+    v-for="(step, index) in steps"
+    :key="step.key"
+  >
+
+    <!-- STEP -->
+
+    <div
+      class="
+        flex
+        flex-col
+        items-center
+        flex-shrink-0
+      "
+    >
+
+      <button
+        @click="goStep(step.key)"
+        class="
+          w-10
+          h-10
+
+          rounded-full
+
+          flex
+          items-center
+          justify-center
+
+          transition-all
+        "
+        :class="
+          currentStep === step.key
+
+          ? 'bg-blue-500 text-white'
+
+          : 'bg-gray-300 text-gray-600'
+        "
       >
 
-      <div
-        class="w-8 h-8 flex items-center justify-center rounded-full text-lg"
-        :class="currentStep === step.key
-        ? 'bg-blue-500 text-white'
-        : 'bg-gray-300'"
-      >
         <div v-html="step.icon"></div>
-      </div>
-      
-        <span
-          :class="currentStep === step.key ? 'text-blue-500 font-semibold' : 'text-gray-500'"
-        >
-          {{ step.label }}
-        </span>
-      </div>
+
+      </button>
+
+      <!-- LABEL -->
+
+      <span
+        class="
+  text-[10px]
+  mt-2
+  text-center
+
+  w-20
+
+  whitespace-nowrap
+
+  md:text-xs
+"
+        :class="
+          currentStep === step.key
+
+          ? 'text-blue-500 font-semibold'
+
+          : 'text-gray-500'
+        "
+      >
+        {{ step.label }}
+      </span>
 
     </div>
 
+    <!-- LINE -->
+    <div
+      v-if="index < steps.length - 1"
+      class="flex-1 h-[1px] bg-gray-400
+
+        -mx-5
+
+        mb-6
+        min-w-[30px]
+      "
+    ></div>
+
+  </template>
+
+</div>
+
     <div class="mt-6 flex justify-end">
       <button
-      @click="resetAll"
+      @click="showResetConfirmation = true"
       class="bg-red-500 text-white px-4 py-2 gap-2 rounded flex items-center justify-between"
       >
         RESET
@@ -383,9 +481,13 @@ export default {
       :series-panels="seriesPanels"
       :parallel-strings="parallelStrings"
 
-     :ac-voltage="
+      :ac-voltage="
     selectedInverter?.acOutputVoltage
   "
+    />
+
+    <Overview 
+      v-show="currentStep === 'overview'"
     />
 
     <div
@@ -425,6 +527,44 @@ export default {
             class="px-4 py-2 rounded bg-orange-500 text-white"
           >
             Proceed Anyway
+          </button>
+        
+        </div>
+      
+      </div>
+    
+    </div>
+
+    <div
+      v-if="showResetConfirmation"
+      class="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+    >
+
+      <div class="bg-white w-[400px] rounded-2xl p-6 shadow-2xl">
+      
+        <h2 class="text-2xl font-bold text-red-500 mb-4">
+          Reset Calculator
+        </h2>
+      
+        <p class="text-gray-600 mb-6">
+          Are you sure you want to reset all calculator data?
+          This action cannot be undone.
+        </p>
+      
+        <div class="flex justify-end gap-3">
+        
+          <button
+            @click="showResetConfirmation = false"
+            class="px-4 py-2 rounded-lg bg-gray-200"
+          >
+            Cancel
+          </button>
+        
+          <button
+            @click="confirmReset"
+            class="px-4 py-2 rounded-lg bg-red-500 text-white"
+          >
+            Yes, Reset
           </button>
         
         </div>

@@ -161,7 +161,7 @@ export default {
     </h2>
 
     <!-- TABS -->
-    <div class="flex justify-between items-center gap-2 mb-6">
+    <div class="flex flex-col md:flex-row justify-between items-center gap-2 mb-6">
       
       <button
         @click="setMode('direct')"
@@ -537,7 +537,7 @@ export default {
     </div>
 
     <!-- FORMULA -->
-    <div class="py-4 text-sm text-blue-600">
+    <div class="hidden md:block py-4 text-sm text-blue-600">
 
       <!-- DIRECT -->
       <template v-if="mode === 'direct'">
@@ -548,6 +548,7 @@ export default {
           = <span class="font-bold">{{ dailyWh.toFixed(0) }} Wh</span>
         </div>
       </template>
+
     
       <!-- BILL -->
       <template v-else-if="mode === 'bill'">
@@ -566,6 +567,98 @@ export default {
           Formula:
           Daily Wh = ({{ computedMonthlyKwh.toFixed(0) }} kWh / 30 days) × 1000
           = <span class="font-bold">{{ dailyWh.toFixed(0) }} Wh</span>
+        </div>
+      </template>
+    
+    </div>
+
+    <div class="md:hidden block py-4 text-sm text-blue-600">
+
+      <!-- DIRECT -->
+      <template v-if="mode === 'direct'">
+        <div class="flex flex-col md:flex-row md:items-center gap-2 font-semibold bg-blue-100 p-3 rounded-lg break-words">
+        
+          <div class="flex items-center gap-2">
+          
+            <svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="rgba(70,146,221,1)">
+              <path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path>
+            </svg>
+          
+            <span>Formula:</span>
+          
+          </div>
+        
+          <span>
+            Daily Wh = ({{ computedMonthlyKwh.toFixed(0) }} kWh / 30 days) × 1000
+            =
+            <span class="font-bold">
+              {{ dailyWh.toFixed(0) }} Wh
+            </span>
+          </span>
+        
+        </div>
+      </template>
+
+      <!-- BILL-->
+      <template v-else-if="mode === 'bill'">
+        <div class="flex flex-col md:flex-row md:items-center gap-2 font-semibold bg-blue-100 p-3 rounded-lg break-words">
+        
+          <div class="flex items-center gap-2">
+          
+            <svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="rgba(70,146,221,1)">
+              <path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path>
+            </svg>
+          
+            <span>Formula:</span>
+          
+          </div>
+        
+          <span>
+            (₱{{ bill }} / ₱{{ rate }} per kWh / 30 days / {{ sunHours }}h sun peak)
+            =
+            <span class="font-bold">
+              {{ requiredSolar.toFixed(2) }} kW
+            </span>
+            required solar power
+          </span>
+        
+        </div>
+      </template>
+    
+      <!-- DEVICE -->
+      <template v-else>
+        <div class="flex flex-col md:flex-row md:items-center gap-2 font-semibold bg-blue-100 p-3 rounded-lg break-words">
+        
+          <div class="flex items-center gap-2">
+          
+            <svg xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            width="24"
+            height="24"
+            fill="rgba(70,146,221,1)">
+              <path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path>
+            </svg>
+          
+            <span>Formula:</span>
+          
+          </div>
+        
+          <span>
+            Daily Wh = ({{ computedMonthlyKwh.toFixed(0) }} kWh / 30 days) × 1000
+            =
+            <span class="font-bold">
+              {{ dailyWh.toFixed(0) }} Wh
+            </span>
+          </span>
+        
         </div>
       </template>
     

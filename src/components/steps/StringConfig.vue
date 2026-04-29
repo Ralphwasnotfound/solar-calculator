@@ -147,7 +147,7 @@ export default {
 
 <template>
 
-    <div class=" p-6">
+    <div class="p-6 mx-auto">
 
         <!-- TITLE -->
         <h2 class="text-2xl flex items-center gap-2 font-bold mb-4">
@@ -235,9 +235,9 @@ export default {
         <!-- MPPT SECTION -->
         <div class="border rounded-lg p-4">
 
-            <div class="flex justify-between items-center mb-4">
+            <div class="flex md:flex-row flex-col justify-between mb-4">
 
-                <h3 class="font-semibold text-lg flex items-center gap-2">
+                <h3 class="font-semibold md:text-lg text-auto pb-4 flex items-center gap-2">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="32" height="32" fill="rgba(226,167,37,1)"><path d="M5 3V19H21V21H3V3H5ZM20.2929 6.29289L21.7071 7.70711L16 13.4142L13 10.415L8.70711 14.7071L7.29289 13.2929L13 7.58579L16 10.585L20.2929 6.29289Z"></path></svg>
                     MPPT String Distribution
                 </h3>
@@ -422,7 +422,10 @@ export default {
                 </span>
                 <div>
                     <p class="font-semibold">
-                        Max Series/MPPT:
+                        <div>
+                            Max Series/MPPT:
+                        </div>
+                        
                         {{ selectedInverter?.maxVoltagePerMppt }}V
                         (max MPPT)
                         /

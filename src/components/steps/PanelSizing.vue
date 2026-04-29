@@ -100,7 +100,7 @@ export default {
 </script>
 
 <template>
-    <div class=" p-6">
+    <div class="p-6 mx-auto">
 
         <!-- TITLE -->
         <h2 class="text-2xl flex items-center gap-2 font-bold mb-4">
@@ -109,8 +109,8 @@ export default {
         </h2>
 
         <!-- MODE SWITCH -->
-        <div class="grid grid-cols-2">
-            <div class="flex-1 flex items-center justify-center gap-2 px-4 py-2 w-full text-md rounded font-semibold mb-6">
+        <div>
+            <div class="flex flex-col md:flex-row items-center justify-between gap-2 py-2 w-full text-md rounded font-semibold mb-6">
                 <button
                     @click="mode = 'list'"
                     :class="mode === 'list'
@@ -305,9 +305,12 @@ export default {
         </div>
 
         <!-- FORMULA -->
-        <div class="py-4 text-sm text-blue-600">
+        <div class="hidden md:block py-4 text-sm text-blue-600">
             <div class="flex items-center justify-start gap-2 font-semibold bg-blue-100 p-1 rounded-lg">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg>
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg>
+                </div>
+                
                 <span class="flex items-center gap-1">
                     <h1 class="font-bold">Formula:</h1>
                     
@@ -322,6 +325,33 @@ export default {
                 </span>
             </div>
         </div>
+
+        <div class="md:hidden block py-4 text-sm text-blue-600">
+            <div class="bg-blue-100 rounded-lg p-3 flex items-start gap-3">
+                <div class="flex-shink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="rgba(70,146,221,1)"><path d="M12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12C22 17.5228 17.5228 22 12 22ZM11 15V17H13V15H11ZM11 7V13H13V7H11Z"></path></svg>
+                </div>
+                <span class="flex flex-col gap-2 text-xs md:text-sm">
+                    <h1 class="font-bold">Formula:</h1>
+
+                    <div class="break-words">
+                    PV Power =
+                    ({{ ((dailyWh || 0)* 1000).toFixed(0) }} Wh / {{ sunHours || 4 }}h)
+                    = {{ ((dailyWh || 0) * 1000 / (sunHours || 4)).toFixed(0) }} W
+                    |
+                    </div>
+
+                    <div class="break-words flex-row flex gap-1">
+                        Panels =
+                        {{ adjustedPower.toFixed(0) }} W / {{ panelWattage || 0 }} W
+                        =
+                        <h1 class="font-bold">{{ panelsNeeded }} pcs</h1>
+                    </div>
+
+                </span>
+            </div>
+        </div>
+
     </div>
 </template>
 
