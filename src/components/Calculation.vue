@@ -90,10 +90,14 @@ export default {
           this.currentStep === 'battery'
       ) {
       
+          const rawBatteryData =
+            localStorage.getItem('batteryData')
+
           const batteryData =
-              JSON.parse(
-                  localStorage.getItem('batteryData')
-              )
+            rawBatteryData &&
+            rawBatteryData !== "undefined"
+                ? JSON.parse(rawBatteryData)
+                : null
       
           const inverter =
               this.selectedInverter
@@ -208,26 +212,26 @@ export default {
     }
 
     const savedPanel =
-        localStorage.getItem(
-            'selectedPanel'
-        )
+      localStorage.getItem('selectedPanel')
 
-    if (savedPanel) {
-
-        this.selectedPanel =
-            JSON.parse(savedPanel)
-    }
+      if (
+          savedPanel &&
+          savedPanel !== "undefined"
+      ) {
+          this.selectedPanel =
+              JSON.parse(savedPanel)
+      }
 
     const savedInverter =
-        localStorage.getItem(
-            'selectedInverter'
-        )
+      localStorage.getItem('selectedInverter')
 
-    if (savedInverter) {
-
-        this.selectedInverter =
-            JSON.parse(savedInverter)
-    }
+      if (
+          savedInverter &&
+          savedInverter !== "undefined"
+      ) {
+          this.selectedInverter =
+              JSON.parse(savedInverter)
+      }
 
     this.seriesPanels =
         Number(

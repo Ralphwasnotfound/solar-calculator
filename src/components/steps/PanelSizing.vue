@@ -315,8 +315,9 @@ export default {
                     <h1 class="font-bold">Formula:</h1>
                     
                     PV Power =
-                    ({{ ((dailyWh || 0)* 1000).toFixed(0) }} Wh / {{ sunHours || 4 }}h)
-                    = {{ ((dailyWh || 0) * 1000 / (sunHours || 4)).toFixed(0) }} W
+                    ({{ (dailyWh || 0).toFixed(0) }} Wh / {{ sunHours || 4 }}h)
+                    =
+                    {{ ((dailyWh || 0) / (sunHours || 4)).toFixed(0) }} W
                     |
                     Panels =
                     {{ adjustedPower.toFixed(0) }} W / {{ panelWattage || 0 }} W
@@ -336,8 +337,9 @@ export default {
 
                     <div class="break-words">
                     PV Power =
-                    ({{ ((dailyWh || 0)* 1000).toFixed(0) }} Wh / {{ sunHours || 4 }}h)
-                    = {{ ((dailyWh || 0) * 1000 / (sunHours || 4)).toFixed(0) }} W
+                    ({{ (dailyWh || 0).toFixed(0) }} Wh / {{ sunHours || 4 }}h)
+                    =
+                    {{ ((dailyWh || 0) / (sunHours || 4)).toFixed(0) }} W
                     |
                     </div>
 

@@ -1,3 +1,186 @@
+<script>
+export default {
+
+    data() {
+
+        return {
+
+            dailyWh: 0,
+            sunHours: 0,
+
+            totalPvPower: 0,
+            totalPanels: 0,
+
+            seriesPanels: 0,
+            parallelStrings: 0,
+
+            selectedPanel: null,
+            selectedInverter: null,
+
+            batteryData: null,
+
+            acVoltage: 0
+        }
+    },
+
+    computed: {
+
+        stringVoltage() {
+
+            if (
+                !this.selectedPanel?.voc
+                ||
+                !this.seriesPanels
+            ) {
+                return '-'
+            }
+
+            return `${(
+                this.selectedPanel.voc
+                *
+                this.seriesPanels
+            ).toFixed(1)}V`
+        },
+
+        stringCurrent() {
+
+            if (
+                !this.selectedPanel?.isc
+            ) {
+                return '-'
+            }
+
+            return `${(
+                this.selectedPanel.isc
+                *
+                this.parallelStrings
+            ).toFixed(1)}A`
+        },
+
+        requiredPvPower() {
+
+            if (
+                !this.dailyWh
+                ||
+                !this.sunHours
+            ) {
+                return '-'
+            }
+
+            return Math.ceil(
+                this.dailyWh / this.sunHours
+            )
+        },
+
+        batteryCapacity() {
+
+            if (
+                !this.batteryData?.selectedBattery
+            ) {
+                return '-'
+            }
+
+            const battery =
+                this.batteryData.selectedBattery
+
+            const total =
+                battery.voltage
+                *
+                battery.ah
+                *
+                this.batteryData.batteryCount
+
+            return `${total} Wh`
+        }
+    },
+
+    mounted() {
+
+        const loadData =
+            JSON.parse(
+                localStorage.getItem(
+                    'loadData'
+                )
+            )
+
+        if (loadData) {
+
+            this.dailyWh =
+                loadData.dailyWh || 0
+
+            this.sunHours =
+                loadData.sunHours || 0
+        }
+
+        const panelData =
+            JSON.parse(
+                localStorage.getItem(
+                    'panelData'
+                )
+            )
+
+        if (panelData) {
+
+            this.totalPvPower =
+                panelData.totalPvPower || 0
+        }
+
+        const selectedPanel =
+            localStorage.getItem('selectedPanel')
+
+            this.selectedPanel =
+                selectedPanel &&
+                selectedPanel !== "undefined"
+                    ? JSON.parse(selectedPanel)
+                    : null
+
+        const selectedInverter =
+            localStorage.getItem('selectedInverter')
+            
+        this.selectedInverter =
+            selectedInverter &&
+            selectedInverter !== "undefined"
+                ? JSON.parse(selectedInverter)
+                : null
+
+        this.seriesPanels =
+            Number(
+                localStorage.getItem(
+                    'seriesPanels'
+                )
+            ) || 0
+
+        this.parallelStrings =
+            Number(
+                localStorage.getItem(
+                    'parallelStrings'
+                )
+            ) || 0
+
+        this.totalPanels =
+            Number(
+                localStorage.getItem(
+                    'totalPanels'
+                )
+            ) || 0
+
+        this.batteryData =
+            JSON.parse(
+                localStorage.getItem(
+                    'batteryData'
+                )
+            )
+
+        this.acVoltage =
+            Number(
+                localStorage.getItem(
+                    'acVoltage'
+                )
+            ) || 0
+    }
+}
+</script>
+
 <template>
 
     <div class="bg-white rounded-2xl shadow p-4 md:p-6">
