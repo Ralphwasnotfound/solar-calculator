@@ -95,44 +95,45 @@ export default {
             $data: {
                 handler() {
 
-  // 🔥 PREVENT saving when not ready
-  if (!this.selectedPanel || !this.requiredSolar) return
 
-  const systemData =
-    getSystemDesign()
+                    if (!this.selectedPanel || !this.requiredSolar) return
 
-  systemData.solar = {
+                    const systemData =
+                        getSystemDesign()
 
-    ...systemData.solar,
-
-    mode: this.mode,
-    search: this.search,
-    selectedPanel: this.selectedPanel,
-    useSafety: this.useSafety,
-
-    totalPvPower: this.totalPvPower,
-    totalPanels: this.panelsNeeded,
-    adjustedPower: this.adjustedPower
-  }
-
-  saveSystemDesign(systemData)
-},
+                    systemData.solar = {
+                    
+                        ...systemData.solar,
                         
-                            deep: true,
-                            immediate: true
-                        },
-                        adjustedPower(val) {
-                            this.$emit('update-adjusted', val)
-                        },
-                        totalPvPower(val) {
-                            this.$emit('update-totalpv', val)
-                        },
-                        selectedPanel(val) {
-                            this.$emit('update-panel', val)
-                        },
-                        panelsNeeded(val) {
-                            this.$emit('update-total-panels', val)
-                        },
+                        mode: this.mode,
+                        search: this.search,
+                        selectedPanel: this.selectedPanel,
+                        useSafety: this.useSafety,
+                        
+                        totalPvPower: this.totalPvPower,
+                        totalPanels: this.panelsNeeded,
+                        adjustedPower: this.adjustedPower
+                    }
+                
+                    saveSystemDesign(systemData)    
+                },
+                        
+                deep: true,
+                immediate: true
+            },
+
+            adjustedPower(val) {
+                this.$emit('update-adjusted', val)
+            },
+            totalPvPower(val) {
+                this.$emit('update-totalpv', val)
+            },
+            selectedPanel(val) {
+                this.$emit('update-panel', val)
+            },
+            panelsNeeded(val) {
+                this.$emit('update-total-panels', val)
+            },
             
         }
         
