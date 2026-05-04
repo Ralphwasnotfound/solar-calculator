@@ -1,60 +1,58 @@
 <script>
+import {
+    getSystemDesign
+} from '../utils/systemStorage.js'
+
 export default {
 
     data() {
 
         return {
-
+            mppts: [],
             dailyWh: 0,
             sunHours: 0,
-
             totalPvPower: 0,
             totalPanels: 0,
-
             seriesPanels: 0,
             parallelStrings: 0,
-
             selectedPanel: null,
             selectedInverter: null,
-
             batteryData: null,
-
-            acVoltage: 0
+            acVoltage: 0,
+            pvWire: null,
+            batteryWire: null,
+            acWire: null,
+            pvBreaker: null,
+            batteryBreaker: null,
+            acBreaker: null,
         }
     },
 
     computed: {
-
         stringVoltage() {
 
-            if (
-                !this.selectedPanel?.voc
-                ||
-                !this.seriesPanels
-            ) {
-                return '-'
-            }
-
-            return `${(
-                this.selectedPanel.voc
-                *
-                this.seriesPanels
-            ).toFixed(1)}V`
+          const firstActive =
+            this.mppts.find(m => m.series > 0)
+                
+          if (!this.selectedPanel || !firstActive) return '-'
+                
+          return `${(
+            this.selectedPanel.voc *
+            firstActive.series
+          ).toFixed(1)}V`
         },
 
         stringCurrent() {
 
-            if (
-                !this.selectedPanel?.isc
-            ) {
-                return '-'
-            }
+          const firstActive =
+            this.mppts.find(m => m.parallel > 0)
 
-            return `${(
-                this.selectedPanel.isc
-                *
-                this.parallelStrings
-            ).toFixed(1)}A`
+          if (!this.selectedPanel || !firstActive) return '-'
+
+          return `${(
+            this.selectedPanel.isc *
+            firstActive.parallel
+          ).toFixed(1)}A`
         },
 
         requiredPvPower() {
@@ -86,97 +84,120 @@ export default {
             const total =
                 battery.voltage
                 *
-                battery.ah
+                battery.capacityAh
                 *
                 this.batteryData.batteryCount
 
             return `${total} Wh`
+        },
+
+        batteryDisplayName() {
+            if (!this.selectedBattery) return '-'
+            return `${this.selectedBattery.brand} ${this.selectedBattery.voltage}V ${this.selectedBattery.capacityAh}Ah (${this.selectedBattery.energyWh}Wh)`
+        }
+    },
+
+    methods: {
+
+        loadData() {
+        
+            const systemData =
+                getSystemDesign()
+            
+            this.mppts =
+                    systemData.solar?.mppts || []
+
+            // LOAD
+            this.dailyWh =
+                systemData.load?.dailyWh || 0
+            
+            this.sunHours =
+                systemData.load?.sunHours || 0
+            
+            // SOLAR
+            this.totalPvPower =
+                systemData.solar?.totalPvPower || 0
+            
+            this.totalPanels =
+                systemData.solar?.totalPanels || 0
+            
+            this.seriesPanels =
+                systemData.solar?.seriesPanels || 0
+            
+            this.parallelStrings =
+                systemData.solar?.parallelStrings || 0
+            
+            this.selectedPanel =
+                systemData.solar?.selectedPanel || null
+            
+            // INVERTER
+            this.selectedInverter =
+                systemData.inverter?.selectedInverter || null
+            
+            // BATTERY
+            this.batteryData = {
+                selectedBattery:
+                    systemData.battery?.selectedBattery || null,
+                batteryCount:
+                    systemData.battery?.batteriesNeeded || 0
+            }
+            
+            // WIRES
+            this.acVoltage =
+                systemData.wires?.acVoltage || 0
+            
+            const sections =
+                systemData.wires?.sections || []
+            
+            this.pvWire =
+                sections.find(s => s.name === 'PV to Inverter')
+            
+            this.batteryWire =
+                sections.find(s => s.name === 'Battery to Inverter')
+            
+            this.acWire =
+                sections.find(s => s.name === 'Inverter to Load')
+            
+            // BREAKERS
+            this.pvBreaker =
+                systemData.protection?.pvBreaker
+                    ? `${systemData.protection.pvBreaker}A`
+                    : '-'
+            
+            this.batteryBreaker =
+                systemData.protection?.batteryBreaker
+                    ? `${systemData.protection.batteryBreaker}A`
+                    : '-'
+            
+            this.acBreaker =
+                systemData.protection?.acBreaker
+                    ? `${systemData.protection.acBreaker}A`
+                    : '-'
         }
     },
 
     mounted() {
+      this.loadData()
 
-        const loadData =
-            JSON.parse(
-                localStorage.getItem(
-                    'loadData'
-                )
-            )
+      window.addEventListener(
+        'system-updated',
+        this.loadData
+      )
+    },
 
-        if (loadData) {
+    beforeUnmount() {
+      window.removeEventListener(
+        'system-updated',
+        this.loadData
+      )
+    },
 
-            this.dailyWh =
-                loadData.dailyWh || 0
-
-            this.sunHours =
-                loadData.sunHours || 0
-        }
-
-        const panelData =
-            JSON.parse(
-                localStorage.getItem(
-                    'panelData'
-                )
-            )
-
-        if (panelData) {
-
-            this.totalPvPower =
-                panelData.totalPvPower || 0
-        }
-
-        const selectedPanel =
-            localStorage.getItem('selectedPanel')
-
-            this.selectedPanel =
-                selectedPanel &&
-                selectedPanel !== "undefined"
-                    ? JSON.parse(selectedPanel)
-                    : null
-
-        const selectedInverter =
-            localStorage.getItem('selectedInverter')
+    watch: {
+        $route() {
+            this.loadData()
             
-        this.selectedInverter =
-            selectedInverter &&
-            selectedInverter !== "undefined"
-                ? JSON.parse(selectedInverter)
-                : null
-
-        this.seriesPanels =
-            Number(
-                localStorage.getItem(
-                    'seriesPanels'
-                )
-            ) || 0
-
-        this.parallelStrings =
-            Number(
-                localStorage.getItem(
-                    'parallelStrings'
-                )
-            ) || 0
-
-        this.totalPanels =
-            Number(
-                localStorage.getItem(
-                    'totalPanels'
-                )
-            ) || 0
-
-        this.batteryData =
-            JSON.parse(
-                localStorage.getItem(
-                    'batteryData'
-                )
-            )
-
-        this.acVoltage =
-            Number(
-                localStorage.getItem(
-                    'acVoltage'
-                )
-            ) || 0
+        }
+        
     }
 }
 </script>
@@ -212,21 +233,29 @@ export default {
                     <div class="flex justify-between py-2 border-b">
                         <span>Daily Consumption</span>
                         <span class="font-semibold">
-                            12920 Wh
+                            {{ dailyWh ? `${Math.round(dailyWh)} Wh` : '-' }}
                         </span>
                     </div>
                     
                     <div class="flex justify-between py-2 border-b">
                         <span>Sun Peak Hours</span>
                         <span class="font-semibold">
-                            4 hrs
+                            {{
+                                sunHours
+                                    ? `${sunHours} hrs`
+                                    : '-'
+                            }}
                         </span>
                     </div>
                     
                     <div class="flex justify-between py-2">
                         <span>Required PV Power</span>
                         <span class="font-semibold">
-                            3230 W
+                            {{
+                                requiredPvPower !== '-'
+                                    ? `${requiredPvPower} W`
+                                    : '-'
+                            }}
                         </span>
                     </div>
                 </div>
@@ -236,21 +265,31 @@ export default {
                     <div class="flex justify-between py-2 border-b">
                         <span>Total PV Power</span>
                         <span class="font-semibold">
-                            3600 W
+                            {{
+                                totalPvPower
+                                    ? `${totalPvPower} W`
+                                    : '-'
+                            }}
                         </span>
                     </div>
                     
                     <div class="flex justify-between py-2 border-b">
                         <span>Total Panels</span>
                         <span class="font-semibold">
-                            9
+                            {{
+                                totalPanels || '-'
+                            }}
                         </span>
                     </div>
                     
                     <div class="flex justify-between py-2">
                         <span>Panel Model</span>
                         <span class="font-semibold">
-                            Jinko Tiger Neo 400W
+                            {{
+                                selectedPanel
+                                    ? `${selectedPanel.brand} ${selectedPanel.model}`
+                                    : '-'
+                            }}
                         </span>
                     </div>
                 </div>
@@ -270,28 +309,32 @@ export default {
                 <div class="flex justify-between py-2 border-b">
                     <span>Panels in Series</span>
                     <span class="font-semibold">
-                        14
+                        {{
+                            seriesPanels || '-'
+                        }}
                     </span>
                 </div>
                 
                 <div class="flex justify-between py-2 border-b">
                     <span>Parallel Strings</span>
                     <span class="font-semibold">
-                        1
+                        {{
+                            parallelStrings || '-'
+                        }}
                     </span>
                 </div>
                 
                 <div class="flex justify-between py-2 border-b">
                     <span>String Voltage</span>
                     <span class="font-semibold">
-                        521.4V
+                        {{ stringVoltage }}
                     </span>
                 </div>
                 
                 <div class="flex justify-between py-2">
                     <span>String Current</span>
                     <span class="font-semibold">
-                        13.9A
+                        {{ stringCurrent }}
                     </span>
                 </div>
             </div>
@@ -316,28 +359,36 @@ export default {
                         <div class="flex justify-between py-2 border-b">
                             <span>Model</span>
                             <span class="font-semibold">
-                                Deye SUN-8K-SG04LP3
+                                {{ selectedInverter?.model || '-' }}
                             </span>
                         </div>
                     
                         <div class="flex justify-between py-2 border-b">
                             <span>Power</span>
                             <span class="font-semibold">
-                                8000W
+                                {{
+                                    selectedInverter?.power
+                                        ? `${selectedInverter.power}W`
+                                        : '-'
+                                }}
                             </span>
                         </div>
                         
                         <div class="flex justify-between py-2 border-b">
                             <span>Phase</span>
                             <span class="font-semibold">
-                                three
+                                {{ selectedInverter?.phase || '-' }}
                             </span>
                         </div>
                         
                         <div class="flex justify-between py-2">
                             <span>AC Voltage</span>
                             <span class="font-semibold">
-                                400V
+                                {{
+                                    acVoltage
+                                        ? `${acVoltage}V`
+                                        : '-'
+                                }}
                             </span>
                         </div>
                     </div>
@@ -356,21 +407,27 @@ export default {
                         <div class="flex justify-between py-2 border-b">
                             <span>Battery Voltage</span>
                             <span class="font-semibold">
-                                48V
+                                {{
+                                    batteryData?.selectedBattery?.voltage
+                                        ? `${batteryData.selectedBattery.voltage}V`
+                                        : '-'
+                                }}
                             </span>
                         </div>
                         
                         <div class="flex justify-between py-2 border-b">
                             <span>Battery Count</span>
                             <span class="font-semibold">
-                                2
+                                {{
+                                    batteryData?.batteryCount || '-'
+                                }}
                             </span>
                         </div>
                         
                         <div class="flex justify-between py-2">
                             <span>Total Capacity</span>
                             <span class="font-semibold">
-                                10240 Wh
+                                {{ batteryCapacity || '-'}}
                             </span>
                         </div>
                     </div>
@@ -419,11 +476,19 @@ export default {
                             </td>
                             
                             <td>
-                                AWG 14 (2.08mm²)
+                                {{
+                                    pvWire?.awg
+                                        ? `AWG ${pvWire.awg}`
+                                        : '-'
+                                }}
                             </td>
                             
                             <td>
-                                20m
+                                {{
+                                    pvWire?.distance
+                                        ? `${pvWire.distance}m`
+                                        : '-'
+                                }}
                             </td>
                         
                         </tr>
@@ -435,11 +500,19 @@ export default {
                             </td>
                             
                             <td>
-                                AWG 8 (8.37mm²)
+                                {{
+                                    batteryWire?.awg
+                                        ? `AWG ${batteryWire.awg}`
+                                        : '-'
+                                }}
                             </td>
                             
                             <td>
-                                2m
+                                {{
+                                    batteryWire?.distance
+                                        ? `${batteryWire.distance}m`
+                                        : '-'
+                                }}
                             </td>
                         
                         </tr>
@@ -451,11 +524,19 @@ export default {
                             </td>
                             
                             <td>
-                                AWG 10 (5.26mm²)
+                                {{
+                                    acWire?.awg
+                                        ? `AWG ${acWire.awg}`
+                                        : '-'
+                                }}
                             </td>
                             
                             <td>
-                                40m
+                                {{
+                                    acWire?.distance
+                                        ? `${acWire.distance}m`
+                                        : '-'
+                                }}
                             </td>
                         
                         </tr>
@@ -478,21 +559,21 @@ export default {
                 <div class="flex justify-between py-2 border-b">
                     <span>PV DC Breaker</span>
                     <span class="font-semibold">
-                        20A DC
+                        {{ pvBreaker || '-' }}
                     </span>
                 </div>
             
                 <div class="flex justify-between py-2 border-b">
                     <span>Battery DC MCCB</span>
                     <span class="font-semibold">
-                        250A DC
+                        {{ batteryBreaker || '-' }}
                     </span>
                     </div>
                 
                 <div class="flex justify-between py-2">
                     <span>AC Breaker</span>
                     <span class="font-semibold">
-                        25A AC
+                        {{ acBreaker || '-' }}
                     </span>
                 </div>
             
@@ -538,11 +619,15 @@ export default {
                             </td>
                             
                             <td>
-                                9
+                                {{ totalPanels || '-' }}
                             </td>
                             
                             <td>
-                                Jinko Tiger Neo 400W
+                                {{
+                                    selectedPanel
+                                    ? `${selectedPanel.brand} ${selectedPanel.model}`
+                                    : '-'
+                                }}
                             </td>
                         
                         </tr>
@@ -554,11 +639,11 @@ export default {
                             </td>
                             
                             <td>
-                                1
+                                {{ selectedInverter && '1' || '-' }}
                             </td>
                             
                             <td>
-                                Deye SUN-8K-SG04LP3
+                                {{ selectedInverter?.model || '-' }}
                             </td>
                         
                         </tr>
@@ -570,13 +655,19 @@ export default {
                             </td>
                             
                             <td>
-                                2
+                                {{
+                                batteryData?.batteryCount !== undefined
+                                    ? batteryData.batteryCount
+                                    : '-'
+                                }}
                             </td>
                             
                             <td>
-                                LiFePO4 48V 100Ah
+                                {{
+  batteryData?.selectedBattery?.displayName || '-'
+}}
                             </td>
-                            
+                        
                         </tr>
                     
                         <tr>
@@ -586,11 +677,11 @@ export default {
                             </td>
                         
                             <td>
-                                1
+                                {{ acBreaker ? 1 : '-' }}
                             </td>
                         
                             <td>
-                                25A AC
+                                {{ acBreaker || '-' }}
                             </td>
                         </tr>
                     </tbody>

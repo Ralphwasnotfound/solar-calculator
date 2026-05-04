@@ -1,5 +1,9 @@
 <script>
 import { inverters } from '../../data/inverters.js';
+import {
+  getSystemDesign,
+  saveSystemDesign
+} from '../../utils/systemStorage.js'
 
 export default {
   props: ['adjustedPower'], // from PanelSizing
@@ -30,15 +34,7 @@ export default {
     requiredInverterPower() {
       return (Number(this.adjustedPower) || 0) * 1.2;
     },
-
-    showSpecs() {
-      if (this.useCustom) {
-        return !!this.selectedInverter;
-      }
     
-      return this.searchQuery && this.recommendedInverter;
-    },
-
     recommendedInverter() {
       return this.filteredInverters.find(
         inv => inv.power >= this.requiredInverterPower
@@ -46,22 +42,36 @@ export default {
     },
 
     activeInverter() {
-  if (this.useCustom && this.selectedInverter) {
-    return this.selectedInverter;
-  }
-  return this.recommendedInverter;
-}
+      if (this.selectedInverter) {
+        return this.selectedInverter;
+      }
+      return this.recommendedInverter;
+    },
+
+    showSpecs() {
+      return !!this.selectedInverter;
+    }
   },
 
   mounted() {
     document.addEventListener('click', this.handleClickOutside);
 
-    const saved = JSON.parse(localStorage.getItem('inverterData'));
-
-    if (saved) {
-      this.selectedInverter = saved.selectedInverter || null;
-      this.searchQuery = saved.searchQuery || '';
-      this.useCustom = saved.useCustom || false;
+    const systemData =
+      getSystemDesign()
+      
+    if (systemData.inverter) {
+    
+      this.selectedInverter =
+        systemData.inverter.selectedInverter || null
+    
+      this.searchQuery =
+        systemData.inverter.searchQuery || ''
+    
+      this.useCustom =
+        systemData.inverter.useCustom || false
+    
+      this.inverterType =
+        systemData.inverter.inverterType || 'hybrid'
     }
   },
   
@@ -105,31 +115,35 @@ export default {
   },
 
   watch: {
-    selectedInverter: {
-      deep: true,
-      handler(val) {
-        localStorage.setItem('inverterData', JSON.stringify({
-          selectedInverter: val,
+    $data: {
+
+      handler() {
+      
+        const systemData =
+          getSystemDesign()
+      
+        systemData.inverter = {
+        
+          inverterType: this.inverterType,
+        
+          useCustom: this.useCustom,
+        
+          selectedInverter: this.selectedInverter,
+        
           searchQuery: this.searchQuery,
-          useCustom: this.useCustom
-        }));
-      }
+        
+          requiredInverterPower:
+            this.requiredInverterPower
+        }
+      
+        saveSystemDesign(systemData)
+      },
+    
+      deep: true
     },
     activeInverter(val) {
       this.$emit('update-inverter', val)
     },
-
-    searchQuery(val) {
-      const saved = JSON.parse(localStorage.getItem('inverterData')) || {};
-      saved.searchQuery = val;
-      localStorage.setItem('inverterData', JSON.stringify(saved))
-    },
-
-    useCustom(val) {
-      const saved = JSON.parse(localStorage.getItem('inverterData')) || {};
-      saved.useCustom = val;
-      localStorage.setItem('inverterData', JSON.stringify(saved))
-    }
   },
   
 };

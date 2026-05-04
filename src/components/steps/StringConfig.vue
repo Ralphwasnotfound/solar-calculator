@@ -1,4 +1,9 @@
 <script>
+import {
+    getSystemDesign,
+    saveSystemDesign
+} from '../../utils/systemStorage.js'
+
 export default {
     props: [
         'selectedPanel',
@@ -98,13 +103,18 @@ export default {
     },
 
     mounted() {
-        this.activeMppt = null;
-        const savedMppts =
-            localStorage.getItem("mppts")
 
-        if (savedMppts) {
+        this.activeMppt = null;
+
+        const systemData =
+            getSystemDesign()
+
+        if (
+            systemData.solar?.mppts
+        ) {
+
             this.mppts =
-                JSON.parse(savedMppts)
+                systemData.solar.mppts
         }
     },
     watch: {
@@ -114,20 +124,40 @@ export default {
         }
     },
     mppts: {
+
         handler(newValue) {
 
-            localStorage.setItem(
-                "mppts",
-                JSON.stringify(newValue)
-            )
-
             const totalSeriesVoltage = Math.max(
-                ...newValue.map(mppt => mppt.series)
+                ...newValue.map(
+                    mppt => mppt.series
+                )
             )
 
             const maxParallelStrings = Math.max(
-                ...newValue.map(mppt => mppt.parallel)
+                ...newValue.map(
+                    mppt => mppt.parallel
+                )
             )
+
+            const systemData =
+                getSystemDesign()
+
+            systemData.solar = {
+
+                ...systemData.solar,
+
+                mppts: newValue,
+
+                seriesPanels:
+                    totalSeriesVoltage,
+
+                parallelStrings:
+                    maxParallelStrings
+            }
+
+            saveSystemDesign(systemData)
+
+            window.dispatchEvent(new Event('system-updated'))
 
             this.$emit(
                 'update-series-panels',
@@ -139,6 +169,7 @@ export default {
                 maxParallelStrings
             )
         },
+
         deep: true
     }
     },

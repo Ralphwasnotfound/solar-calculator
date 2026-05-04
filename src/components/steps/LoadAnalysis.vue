@@ -1,4 +1,9 @@
 <script>
+import {
+  getSystemDesign,
+  saveSystemDesign
+} from '../../utils/systemStorage.js'
+
 export default {
   data() {
     return {
@@ -124,19 +129,54 @@ export default {
     }
   },
   mounted() {
-    const saved = localStorage.getItem('loadData');
-    
-    if (saved) {
-      Object.assign(this.$data, JSON.parse(saved));
+
+    const systemData =
+      getSystemDesign()
+
+    if (systemData.load) {
+
+      this.sunHours =
+        systemData.load.sunHours || 4
+
+      this.monthlyKwh =
+        systemData.load.monthlyKwh || null
+
+      this.mode =
+        systemData.load.mode || 'direct'
+
+      this.bill =
+        systemData.load.bill || null
+
+      this.rate =
+        systemData.load.rate || null
+
+      this.devices =
+        systemData.load.devices || []
     }
   },
   watch: {
     $data: {
-      handler(val) {
-        localStorage.setItem('loadData', JSON.stringify(val));
-      },
-      deep: true
+    handler() {
+
+      const systemData =
+        getSystemDesign()
+
+      systemData.load = {
+        dailyWh: this.dailyWh || 0,
+        sunHours: this.sunHours || 0,
+        monthlyKwh: this.monthlyKwh || 0,
+        mode: this.mode,
+        bill: this.bill || 0,
+        rate: this.rate || 0,
+        devices: this.devices,
+        computedMonthlyKwh: this.computedMonthlyKwh
+      }
+
+      saveSystemDesign(systemData)
     },
+
+    deep: true
+  },
     requiredSolar(val) {
       this.$emit('update-solar', val)
     },

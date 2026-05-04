@@ -1,4 +1,8 @@
 <script>
+import {
+    getSystemDesign,
+    saveSystemDesign
+} from '../../utils/systemStorage.js'
 
 export default {
 
@@ -145,6 +149,37 @@ export default {
             ]
         }
     },
+    watch: {
+
+        sections: {
+        
+            handler(newValue) {
+            
+                const systemData =
+                    getSystemDesign()
+            
+                systemData.protection = {
+                
+                    sections: newValue,
+                
+                    pvBreaker:
+                        this.calculations.pvBreaker,
+                
+                    batteryBreaker:
+                        this.calculations.batteryBreaker,
+                
+                    acBreaker:
+                        this.calculations.acBreaker
+                }
+            
+                saveSystemDesign(systemData)
+            },
+        
+            deep: true,
+        
+            immediate: true
+        }
+    }
 }
 
 </script>

@@ -7,6 +7,10 @@ import Battery from './steps/Battery.vue'
 import WireSizing from './steps/WireSizing.vue'
 import Breakers from './steps/Breakers.vue'
 import Overview from '../components/Overview.vue'
+import {
+    getSystemDesign,
+    saveSystemDesign
+} from '../utils/systemStorage.js'
 
 export default {
   components: {
@@ -86,69 +90,58 @@ export default {
   methods: {
     goNext() {
 
-      if (
-          this.currentStep === 'battery'
-      ) {
+      if (this.currentStep === 'battery') {
       
-          const rawBatteryData =
-            localStorage.getItem('batteryData')
-
-          const batteryData =
-            rawBatteryData &&
-            rawBatteryData !== "undefined"
-                ? JSON.parse(rawBatteryData)
-                : null
+        const systemData =
+          getSystemDesign()
       
-          const inverter =
-              this.selectedInverter
+        const batteryData =
+          systemData.battery || {}
       
+        const inverter =
+          this.selectedInverter
+      
+        if (
+          batteryData?.selectedBattery &&
+          inverter
+        ) {
+        
+          const batteryVoltage =
+            batteryData.selectedBattery.voltage
+        
+          const range =
+            inverter.batteryRange
+        
+          const min =
+            parseInt(range.split('-')[0])
+        
+          const max =
+            parseInt(range.split('-')[1])
+        
           if (
-              batteryData?.selectedBattery &&
-              inverter
+            batteryVoltage < min ||
+            batteryVoltage > max
           ) {
           
-              const batteryVoltage =
-                  batteryData.selectedBattery.voltage
+            this.batteryWarningMessage =
+              `Battery voltage (${batteryVoltage}V) is outside inverter's range (${range}). You may need to wire batteries in series or choose a different battery.`
           
-              const range =
-                  inverter.batteryRange
-          
-              const min =
-                  parseInt(range.split('-')[0])
-          
-              const max =
-                  parseInt(range.split('-')[1])
-          
-              if (
-                  batteryVoltage < min ||
-                  batteryVoltage > max
-              ) {
-              
-                this.batteryWarningMessage =
-                
-                `Battery voltage (${batteryVoltage}V) is outside inverter's range (${range}). You may need to wre batties in series or choose a different battery.`
-                this.showBatteryWarning = true
-                return
-              }
-            
+            this.showBatteryWarning = true
+            return
           }
-        
+        }
       }
     
       const index =
-          this.steps.findIndex(
-              s => s.key === this.currentStep
-          )
+        this.steps.findIndex(
+          s => s.key === this.currentStep
+        )
     
-      if (
-          index < this.steps.length - 1
-      ) {
+      if (index < this.steps.length - 1) {
       
-          this.currentStep =
-              this.steps[index + 1].key
-      
+        this.currentStep =
+          this.steps[index + 1].key
       }
-      
     },
     confirmReset() {
 
@@ -163,27 +156,12 @@ export default {
     },
 
     resetAll() {
-      localStorage.removeItem('currentStep');
-      localStorage.removeItem('loadData');
-      localStorage.removeItem('panelData');
-      localStorage.removeItem('inverterData');
-      localStorage.removeItem('mppts');
-      localStorage.removeItem('batteryData');
 
-      // wire sizing
-      localStorage.removeItem('pvToInverter');
-      localStorage.removeItem('batteryToInverter');
-      localStorage.removeItem('inverterToLoad');
-      localStorage.removeItem('voltageDrop');
-      localStorage.removeItem('acVoltage');
+        localStorage.removeItem(
+            'solarSystemDesign'
+        )
 
-      localStorage.removeItem('selectedPanel');
-      localStorage.removeItem('selectedInverter');
-      localStorage.removeItem('seriesPanels');
-      localStorage.removeItem('parallelStrings');
-      localStorage.removeItem('totalPanels');
-
-      location.reload();
+        location.reload()
     },
     proceedAnyway() {
       this.showBatteryWarning = false
@@ -200,111 +178,40 @@ export default {
   },
   mounted() {
 
-    const savedStep =
-        localStorage.getItem(
-            'currentStep'
-        )
+    const systemData =
+        getSystemDesign()
 
-    if (savedStep) {
+      this.currentStep =
+          systemData.currentStep || 'load'
 
-        this.currentStep =
-            savedStep
-    }
+      this.selectedPanel =
+          systemData.solar?.selectedPanel || null
 
-    const savedPanel =
-      localStorage.getItem('selectedPanel')
+      this.selectedInverter =
+          systemData.inverter?.selectedInverter || null
 
-      if (
-          savedPanel &&
-          savedPanel !== "undefined"
-      ) {
-          this.selectedPanel =
-              JSON.parse(savedPanel)
-      }
+      this.seriesPanels =
+          systemData.solar?.seriesPanels || 0
 
-    const savedInverter =
-      localStorage.getItem('selectedInverter')
+      this.parallelStrings =
+          systemData.solar?.parallelStrings || 0
 
-      if (
-          savedInverter &&
-          savedInverter !== "undefined"
-      ) {
-          this.selectedInverter =
-              JSON.parse(savedInverter)
-      }
-
-    this.seriesPanels =
-        Number(
-            localStorage.getItem(
-                'seriesPanels'
-            )
-        ) || 0
-
-    this.parallelStrings =
-        Number(
-            localStorage.getItem(
-                'parallelStrings'
-            )
-        ) || 0
-
-    this.totalPanels =
-        Number(
-            localStorage.getItem(
-                'totalPanels'
-            )
-        ) || 0
+      this.totalPanels =
+          systemData.solar?.totalPanels || 0
   },
 
   watch: {
 
     currentStep(val) {
-        localStorage.setItem(
-            'currentStep',
-            val
-        )
-    },
 
-    selectedPanel: {
-        deep: true,
-        handler(val) {
-            localStorage.setItem(
-                'selectedPanel',
-                JSON.stringify(val)
-            )
-        }
-    },
+        const systemData =
+            getSystemDesign()
 
-    selectedInverter: {
-        deep: true,
-        handler(val) {
-            localStorage.setItem(
-                'selectedInverter',
-                JSON.stringify(val)
-            )
-        }
-    },
+        systemData.currentStep = val
 
-    seriesPanels(val) {
-        localStorage.setItem(
-            'seriesPanels',
-            val
-        )
-    },
-
-    parallelStrings(val) {
-        localStorage.setItem(
-            'parallelStrings',
-            val
-        )
-    },
-
-    totalPanels(val) {
-        localStorage.setItem(
-            'totalPanels',
-            val
-        )
+        saveSystemDesign(systemData)
     }
-  }
+  },
   
 }
 </script>

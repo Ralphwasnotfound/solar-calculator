@@ -1,5 +1,9 @@
 <script>
 import { panels } from '../../data/panels.js';
+import {
+    getSystemDesign,
+    saveSystemDesign
+} from '../../utils/systemStorage.js'
 
 export default {
     props: [
@@ -68,31 +72,67 @@ export default {
             }
         },
         mounted() {
-            const saved = localStorage.getItem('panelData');
 
-            if (saved) {
-                Object.assign(this.$data, JSON.parse(saved));
+            const systemData =
+                getSystemDesign()
+
+            if (systemData.solar) {
+            
+                this.mode =
+                    systemData.solar.mode || 'list'
+            
+                this.search =
+                    systemData.solar.search || ''
+            
+                this.selectedPanel =
+                    systemData.solar.selectedPanel || null
+            
+                this.useSafety =
+                    systemData.solar.useSafety ?? true
             }
         },
         watch: {
             $data: {
-                handler(val) {
-                    localStorage.setItem('panelData', JSON.stringify(val));
-                },
-                deep: true
-            },
-            adjustedPower(val) {
-                this.$emit('update-adjusted', val)
-            },
-            totalPvPower(val) {
-                this.$emit('update-totalpv', val)
-            },
-            selectedPanel(val) {
-                this.$emit('update-panel', val)
-            },
-            panelsNeeded(val) {
-                this.$emit('update-total-panels', val)
-            },
+                handler() {
+
+  // 🔥 PREVENT saving when not ready
+  if (!this.selectedPanel || !this.requiredSolar) return
+
+  const systemData =
+    getSystemDesign()
+
+  systemData.solar = {
+
+    ...systemData.solar,
+
+    mode: this.mode,
+    search: this.search,
+    selectedPanel: this.selectedPanel,
+    useSafety: this.useSafety,
+
+    totalPvPower: this.totalPvPower,
+    totalPanels: this.panelsNeeded,
+    adjustedPower: this.adjustedPower
+  }
+
+  saveSystemDesign(systemData)
+},
+                        
+                            deep: true,
+                            immediate: true
+                        },
+                        adjustedPower(val) {
+                            this.$emit('update-adjusted', val)
+                        },
+                        totalPvPower(val) {
+                            this.$emit('update-totalpv', val)
+                        },
+                        selectedPanel(val) {
+                            this.$emit('update-panel', val)
+                        },
+                        panelsNeeded(val) {
+                            this.$emit('update-total-panels', val)
+                        },
             
         }
         

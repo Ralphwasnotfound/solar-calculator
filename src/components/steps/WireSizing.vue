@@ -1,4 +1,8 @@
 <script>
+import {
+    getSystemDesign,
+    saveSystemDesign
+} from '../../utils/systemStorage.js'
 
 export default {
     props: {
@@ -10,41 +14,18 @@ export default {
         parallelStrings: Number,
     },
     data() {
+
         return {
-            pvToInverter:
-                Number(
-                    localStorage.getItem(
-                        'pvToInverter'
-                    )
-                ) || 10,
 
-            batteryToInverter:
-                Number(
-                    localStorage.getItem(
-                        'batteryToInverter'
-                    )
-                ) || 2,
+            pvToInverter: 10,
 
-            inverterToLoad:
-                Number(
-                    localStorage.getItem(
-                        'inverterToLoad'
-                    )
-                ) || 15,
+            batteryToInverter: 2,
 
-            voltageDrop:
-                Number(
-                    localStorage.getItem(
-                        'voltageDrop'
-                    )
-                ) || 3,
+            inverterToLoad: 15,
 
-            acVoltage:
-                Number(
-                    localStorage.getItem(
-                        'acVoltage'
-                    )
-                ) || 220
+            voltageDrop: 3,
+
+            acVoltage: 220
         }
     },
     methods: {
@@ -209,42 +190,64 @@ export default {
             ]
         }
     },
+    mounted() {
+
+        const systemData =
+            getSystemDesign()
+
+        if (systemData.wires) {
+
+            this.pvToInverter =
+                systemData.wires.pvToInverter || 10
+
+            this.batteryToInverter =
+                systemData.wires.batteryToInverter || 2
+
+            this.inverterToLoad =
+                systemData.wires.inverterToLoad || 15
+
+            this.voltageDrop =
+                systemData.wires.voltageDrop || 3
+
+            this.acVoltage =
+                systemData.wires.acVoltage || 220
+        }
+    },
     watch: {
 
-        pvToInverter(value) {
-            localStorage.setItem(
-                'pvToInverter',
-                value
-            )
+        $data: {
+        
+            handler() {
+            
+                const systemData =
+                    getSystemDesign()
+            
+                systemData.wires = {
+                
+                    pvToInverter:
+                        this.pvToInverter,
+                
+                    batteryToInverter:
+                        this.batteryToInverter,
+                
+                    inverterToLoad:
+                        this.inverterToLoad,
+                
+                    voltageDrop:
+                        this.voltageDrop,
+                
+                    acVoltage:
+                        this.acVoltage,
+                
+                    sections:
+                        this.sections
+                }
+            
+                saveSystemDesign(systemData)
+            },
+        
+            deep: true
         },
-
-        batteryToInverter(value) {
-            localStorage.setItem(
-                'batteryToInverter',
-                value
-            )
-        },
-
-        inverterToLoad(value) {
-            localStorage.setItem(
-                'inverterToLoad',
-                value
-            )
-        },
-
-        voltageDrop(value) {
-            localStorage.setItem(
-                'voltageDrop',
-                value
-            )
-        },
-
-        acVoltage(value) {
-            localStorage.setItem(
-                'acVoltage',
-                value
-            )
-        }
     }
 }
 

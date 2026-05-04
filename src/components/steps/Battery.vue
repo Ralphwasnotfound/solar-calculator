@@ -1,6 +1,9 @@
 <script>
-import { handleError } from 'vue';
 import { batteries } from '../../data/batteries.js';
+import {
+    getSystemDesign,
+    saveSystemDesign
+} from '../../utils/systemStorage.js'
 
 export default {
     props: [
@@ -23,7 +26,12 @@ export default {
             autonomyType: 'hours',
 
             dod: 0.9,
-            
+
+            selectedBatteryId: null,
+
+            _savedBatteriesNeeded: 0,
+            _savedRequiredCapacity: 0,
+
         }
     },
     computed: {
@@ -34,65 +42,125 @@ export default {
             return this.autonomyValue
         },
         requiredCapacity() {
-            if (
-                !this.selectedBattery || 
-                !this.dailyWh
-            ) return 0
 
+            if (
+                !this.selectedBattery ||
+                !this.dailyWh ||
+                !this.selectedInverter
+            ) {
+                return this._savedRequiredCapacity || 0
+            }
+            
             return Math.round(
                 (
                     this.autonomyType === 'hours'
-
-                    ? (
-                        this.dailyWh / 24
-                    ) * this.autonomyValue
-
-                    : this.dailyWh * this.autonomyValue
+                        ? (this.dailyWh / 24) * this.autonomyValue
+                        : this.dailyWh * this.autonomyValue
                 )
-
                 /
-
                 (
-                    this.dod *
+                  this.dod *
                     parseInt(this.selectedInverter?.voltage)
                 )
             )
         },
 
         batteriesNeeded() {
-            if (
-                !this.selectedBattery
-            ) return 0
 
-            return Math.ceil(
-                this.requiredCapacity / 
+            if (!this.selectedBattery) {
+                return this._savedBatteriesNeeded || 0
+            }
+            
+            const computed = Math.ceil(
+                this.requiredCapacity /
                 this.selectedBattery.capacityAh
             )
+            
+            return computed || this._savedBatteriesNeeded || 0
         }
     },
-    mounted() {
-        const savedBattery =
-            localStorage.getItem('batteryData')
 
-        if (savedBattery) {
-            Object.assign(
-                this.$data,
-                JSON.parse(savedBattery)
-            )
+    mounted() {
+
+        const systemData =
+            getSystemDesign()
+            
+        if (systemData.battery) {
+
+            const saved = systemData.battery
+
+            this._savedBatteriesNeeded =
+                saved.batteriesNeeded || 0
+
+            this._savedRequiredCapacity =
+                saved.requiredCapacity || 0
+        }
+            
+        if (systemData.battery) {
+        
+            const saved =
+                systemData.battery.selectedBattery
+        
+            if (saved) {
+                this.selectedBatteryId =
+                saved.energyWh
+            }
+
+            this.autonomyDays =
+                systemData.battery.autonomyDays || 1
+
+            this.autonomyValue =
+                systemData.battery.autonomyValue || 12
+
+            this.autonomyType =
+            systemData.battery.autonomyType || 'hours'
+
+            this.dod =
+                systemData.battery.dod || 0.9
         }
     },
     watch: {
-        $data: {
-            handler(value) {
-                localStorage.setItem(
-                    'batteryData',
-                    JSON.stringify(value)
+        selectedBatteryId(id) {
+        
+            const battery =
+                this.batteries.find(
+                    b => b.energyWh === id
                 )
-            },
-            deep:true
-        }
-    }
+        
+            if (!battery) {
+                this.selectedBattery = null
+                return
+            }
 
+            this.selectedBattery = {
+                ...battery,
+                displayName: `${battery.brand} ${battery.voltage}V ${battery.capacityAh}Ah (${battery.energyWh}Wh)`
+            }
+        },
+
+
+        $data: {
+            handler() {
+            
+            if (!this.selectedBattery || !this.selectedInverter) return
+            
+            const systemData = getSystemDesign()
+            
+            systemData.battery = {
+                selectedBattery: this.selectedBattery,
+                autonomyDays: this.autonomyDays,
+                autonomyValue: this.autonomyValue,
+                autonomyType: this.autonomyType,
+                dod: this.dod,
+                requiredCapacity: this.requiredCapacity,
+                batteriesNeeded: this.batteriesNeeded
+                }
+                
+                saveSystemDesign(systemData)
+            },
+            deep: true
+        }
+    },
 }
 </script>
 
@@ -137,20 +205,20 @@ export default {
                     Select Battery
                 </label>
 
-                <select
-                    v-model="selectedBattery"
+                <select 
+                    v-model="selectedBatteryId"
                     class="w-full border rounded-lg px-4 py-3"
-                >
+                    >
 
                     <option :value="null">
                         Select Battery
                     </option>
 
                     <option
-                        v-for="battery in batteries"
-                        :key="battery.energyWh"
-                        :value="battery"
-                    >
+                          v-for="battery in batteries"
+                          :key="battery.energyWh"
+                          :value="battery.energyWh"
+                        >
 
                         {{ battery.brand }}
 
