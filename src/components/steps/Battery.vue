@@ -189,10 +189,7 @@ export default {
           <!-- DAYS BUTTON -->
 
           <button
-            @click="
-              autonomyType = 'days'
-              autonomyValue = 1
-            "
+            @click="((autonomyType = 'days'), (autonomyValue = 1))"
             type="button"
             :class="
               autonomyType === 'days' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
@@ -205,10 +202,7 @@ export default {
           <!-- HOURS BUTTON -->
 
           <button
-            @click="
-              autonomyType = 'hours'
-              autonomyValue = 12
-            "
+            @click="((autonomyType = 'hours'), (autonomyValue = 12))"
             type="button"
             :class="
               autonomyType === 'hours' ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-600'
