@@ -1,0 +1,28 @@
+{
+  "technicalSource": "CEC",
+  "distributor": "SAM",
+  "sourceUrl": "https://raw.githubusercontent.com/NatLabRockies/SAM/cba319ded1c32a7f5b3ac76545a29e1f7181d238/deploy/libraries/CEC%20Modules.csv",
+  "upstreamRevision": "cba319ded1c32a7f5b3ac76545a29e1f7181d238",
+  "importedAt": "2026-09-08T14:06:58.465Z",
+  "sourceSha256": "a28cf8956a839ed98bb941809b439e4907f5b4c237bd9299bc123fb502c29aff",
+  "totalSourceRecords": 21677,
+  "acceptedRecords": 21601,
+  "rejectedRecords": 76,
+  "rejectionReasons": {
+    "duplicate_identity": 72,
+    "imp_above_isc": 4
+  },
+  "importerVersion": "1.0.0",
+  "schemaVersion": 1,
+  "snapshotId": "cec-v1-importer-1.0.0-cba319ded1c32a7f5b3ac76545a29e1f7181d238-a28cf8956a839ed98bb941809b439e4907f5b4c237bd9299bc123fb502c29aff",
+  "snapshotSha256": "885c2813cfd3fe856c2d9d57375e5dc930ad91b531af17f6aa0e1a008f45d144",
+  "snapshotBytes": 11243628,
+  "sourceBytes": 6274198,
+  "efficiencyMethod": "100 * STC / (1000 * A_c)",
+  "catalogVersions": [
+    "2026.7.3"
+  ],
+  "catalogDates": [
+    "6/23/2026"
+  ]
+}

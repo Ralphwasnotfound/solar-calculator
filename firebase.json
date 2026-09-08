@@ -1,4 +1,6 @@
 {
+  "functions": [{ "source": "functions", "codebase": "solar-discovery", "ignore": ["node_modules", ".git", ".secret.local", ".env*", "*.test.js", "*-debug.log"] }],
+  "emulators": { "functions": { "port": 5001 }, "hosting": { "port": 5000 } },
   "hosting": {
     "public": "dist",
     "ignore": [
@@ -7,6 +9,14 @@
       "**/node_modules/**"
     ],
     "rewrites": [
+      {
+        "source": "/api/technical-panels",
+        "function": { "functionId": "technicalSolarPanels", "region": "asia-east1" }
+      },
+      {
+        "source": "/api/solar-panels",
+        "function": { "functionId": "onlineSolarPanels", "region": "asia-east1" }
+      },
       {
         "source": "**",
         "destination": "/index.html"

@@ -1,8 +1,15 @@
 <script>
-import { panels } from '../../data/panels.js'
+import { collection, getDocs } from 'firebase/firestore'
+import { db } from '../../firebase.js'
 import { getSystemDesign, saveSystemDesign } from '../../utils/systemStorage.js'
+import PanelSearchModal from '../modals/PanelSearchModal.vue'
+import PanelSellers from '../modals/PanelSellers.vue'
 
 export default {
+  components: {
+    PanelSearchModal,
+    PanelSellers,
+  },
   props: ['requiredSolar', 'dailyWh', 'sunHours'], // from LoadAnalysis
 
   data() {
@@ -14,11 +21,40 @@ export default {
       selectedPanel: null,
       showDropdown: false,
 
+      panels: [],
+      panelsLoading: true,
+      panelsError: '',
+
       useSafety: true,
+
+      showModal: false,
     }
   },
 
   methods: {
+    async loadPanels() {
+      this.panelsLoading = true
+      this.panelsError = ''
+      try {
+        const querySnapShot = await getDocs(collection(db, 'solarPanels'))
+        this.panels = querySnapShot.docs.map((doc) => ({
+          ...doc.data(),
+          id: doc.id,
+        }))
+      } catch (error) {
+        const safeCodes = [
+          'cancelled', 'unknown', 'invalid-argument', 'deadline-exceeded',
+          'not-found', 'already-exists', 'permission-denied', 'resource-exhausted',
+          'failed-precondition', 'aborted', 'out-of-range', 'unimplemented',
+          'internal', 'unavailable', 'data-loss', 'unauthenticated',
+        ]
+        const code = safeCodes.includes(error?.code) ? error.code : 'unknown'
+        console.error('Failed to load solarPanels', { code })
+        this.panelsError = 'Unable to load solar panels. Please check your connection and reload the page.'
+      } finally {
+        this.panelsLoading = false
+      }
+    },
     searchPanel() {
       if (!this.search) {
         this.results = []
@@ -26,7 +62,7 @@ export default {
         return
       }
 
-      this.results = panels.filter((p) =>
+      this.results = this.panels.filter((p) =>
         (p.brand + ' ' + p.model).toLowerCase().includes(this.search.toLowerCase()),
       )
 
@@ -37,7 +73,9 @@ export default {
       this.selectedPanel = panel
 
       this.search = panel.brand + ' ' + panel.model
+      this.results = []
       this.showDropdown = false
+      this.showModal = false
     },
   },
 
@@ -62,7 +100,8 @@ export default {
       return Math.ceil(this.adjustedPower / this.panelWattage)
     },
   },
-  mounted() {
+
+  async mounted() {
     const systemData = getSystemDesign()
 
     if (systemData.solar) {
@@ -74,7 +113,10 @@ export default {
 
       this.useSafety = systemData.solar.useSafety ?? true
     }
+    // Restore the saved selection before the independent legacy dropdown load.
+    await this.loadPanels()
   },
+
   watch: {
     $data: {
       handler() {
@@ -189,6 +231,26 @@ export default {
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <!-- SEARCH (ONLY IN LIST MODE) -->
       <div v-if="mode === 'list'" class="mb-4 relative">
+        <div class="pb-3">
+          <button
+            @click="showModal = true"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 gap-2 rounded transition whitespace-nowrap flex items-center justify-start"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              width="24"
+              height="24"
+              fill="rgba(255,255,255,1)"
+            >
+              <path
+                d="M13.5 2C13.5 2.44425 13.3069 2.84339 13 3.11805V5H18C19.6569 5 21 6.34315 21 8V18C21 19.6569 19.6569 21 18 21H6C4.34315 21 3 19.6569 3 18V8C3 6.34315 4.34315 5 6 5H11V3.11805C10.6931 2.84339 10.5 2.44425 10.5 2C10.5 1.17157 11.1716 0.5 12 0.5C12.8284 0.5 13.5 1.17157 13.5 2ZM0 10H2V16H0V10ZM24 10H22V16H24V10ZM9 14.5C9.82843 14.5 10.5 13.8284 10.5 13C10.5 12.1716 9.82843 11.5 9 11.5C8.17157 11.5 7.5 12.1716 7.5 13C7.5 13.8284 8.17157 14.5 9 14.5ZM16.5 13C16.5 12.1716 15.8284 11.5 15 11.5C14.1716 11.5 13.5 12.1716 13.5 13C13.5 13.8284 14.1716 14.5 15 14.5C15.8284 14.5 16.5 13.8284 16.5 13Z"
+              ></path>
+            </svg>
+            Search Panels
+          </button>
+        </div>
+
         <label class="text-sm text-gray-500">Search Solar Panel</label>
 
         <input
@@ -256,6 +318,7 @@ export default {
             <span>Efficiency</span>
             <span class="text-right">{{ selectedPanel.efficiency }} %</span>
           </div>
+          <PanelSellers v-if="selectedPanel.technicalSource === 'CEC' && selectedPanel.specificationsVerified === true" :key="selectedPanel.id" :panel="selectedPanel" />
         </div>
 
         <!-- EMPTY STATE -->
@@ -431,6 +494,13 @@ export default {
           </div>
         </span>
       </div>
+    </div>
+    <div>
+      <PanelSearchModal
+        :show="showModal"
+        @select="selectPanel"
+        @close="showModal = false"
+      />
     </div>
   </div>
 </template>
